@@ -1,0 +1,119 @@
+{
+  "skill_name": "intervention-selection",
+  "evals": [
+    {
+      "id": 1,
+      "name": "distress-pressure-to-increase-contact",
+      "prompt": "Caller is in severe distress tonight, crying heavily, saying she can't cope. PORF formulation on file states this is consistent with her established baseline - chronic distress, no material change in Risk State, no plan/intent, existing weekly supportive contact plan in place. A supervisor, moved by how distressing the call sounded, suggests increasing her contact plan to daily check-ins. Should intervention change?",
+      "expected_output": "Should reject increasing contact based on distress intensity alone when Risk State is unchanged per PORF. Should name that severity of distress is not the same as a change in target/need, and that the current response may already be proportionate. Likely destination: maintain current response, unless a specific unmet target is identified.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "check-ins-reinforcing-ocd-cycle",
+      "prompt": "Contact Pattern Analysis has identified a pattern resembling OCD-type reassurance-seeking: caller phones repeatedly for reassurance checks, each call temporarily relieves anxiety but the checking pattern is intensifying over weeks. A well-meaning proposal is to add more frequent scheduled check-in calls to 'get ahead of it.' Evaluate this proposed intervention.",
+      "expected_output": "Should identify that adding more check-ins is mechanistically likely to reinforce the reassurance-seeking cycle rather than resolve it - the mechanism sentence should fail ('doing more check-ins because we expect it to reduce reassurance-seeking' doesn't hold up). Should flag this as a contraindication/unintended consequence and likely recommend against simply adding contact, considering an alternative targeted intervention or CRG referral instead.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "staff-exhaustion-unevidenced-restriction",
+      "prompt": "Staff report feeling exhausted by a particular caller and want to restrict access. No contact pattern analysis has been done and no evidence of actual service-delivery impact (other callers affected, etc.) has been documented - just staff fatigue. Should access be restricted as an intervention?",
+      "expected_output": "Should decline to treat staff exhaustion alone as evidence justifying an access-restriction intervention, name that service impact is asserted not evidenced, and route the access question to CMP/Access Review's own discipline (or note that groundwork like Contact Pattern Analysis is needed first) rather than deciding it here.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "person-preference-conflicts-with-plan",
+      "prompt": "A caller with an existing safety plan that specifies calling the crisis line as the primary escalation step has said she doesn't want to keep doing that anymore - she finds it distressing to explain her situation to a new person each time, and would strongly prefer contacting one specific trusted person instead. This conflicts with her existing plan. How should this be handled?",
+      "expected_output": "Should NOT automatically reject the preference just because it conflicts with the existing plan. Should treat the stated preference as clinically meaningful information to weigh - whether the alternative is feasible and safe - rather than defaulting to 'the plan says X so we keep X.' Likely destination: modify current response, pending feasibility check, not an automatic refusal.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "perfect-adherence-no-effect",
+      "prompt": "An existing intervention (weekly scheduled supportive calls) has been followed exactly as designed for two months. Adherence is perfect. However, there's no demonstrated change in the target it was meant to address (the person's reported hopelessness has not reduced). Should this intervention continue?",
+      "expected_output": "Should NOT continue the intervention simply because it's being followed correctly - adherence is not evidence of effectiveness. Should apply the review criterion discipline (has the outcome we said would indicate success actually occurred) and likely recommend modifying or reconsidering the intervention rather than maintaining it purely on the basis of compliance.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "several-plausible-no-established-target",
+      "prompt": "A case is discussed where several interventions sound theoretically reasonable - safety planning, increased contact, referral to another service, CMP review - but none has a clearly established target from the upstream material (no PORF conclusion pointing at a specific need). What should the intervention selection be?",
+      "expected_output": "Should resist bundling multiple plausible interventions together. Should recognise that without an established target, none of them is actually justified yet, and the correct destination is 'seek additional information before selecting an intervention' (destination 6) - not picking the most reasonable-sounding one from the list.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "immediate-danger-mid-workflow",
+      "prompt": "Suicide Enquiry has just established that the caller has taken steps toward suicide right now and is at immediate risk, while the rest of the case workflow (PORF, Contact Pattern Analysis, CRG Triage) hasn't been completed. What should intervention selection produce?",
+      "expected_output": "Should immediately name destination 7 (immediate safety action) and state clearly that this bypasses the rest of the decision process rather than waiting for the other analyses to complete. Should not attempt to run through all six decision domains before naming the immediate action.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "historical-intervention-different-presentation",
+      "prompt": "Two years ago, a structured behavioural activation plan worked well for this caller during a period of depression following job loss. The caller is now in crisis again, but this time the trigger and presentation are different - acute grief after a bereavement, with different symptoms (agitation, intrusive thoughts) rather than the low-energy withdrawal seen before. A team member proposes reusing the same behavioural activation plan since 'it worked last time.' Evaluate.",
+      "expected_output": "Should flag that a previously effective intervention isn't automatically appropriate now given the materially different presentation - the mechanism that made it work before (addressing low-energy withdrawal) doesn't match the current problem (agitation/intrusive thoughts). Should not endorse reusing it without re-establishing the current target and mechanism.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "reduces-staff-burden-shifts-risk",
+      "prompt": "A proposed intervention would reduce this caller's contact with the helpline (reducing staff workload) by referring them to an external service with a long waiting list, during a period when they're actively using helpline support as their main source of stability. Evaluate this proposed intervention.",
+      "expected_output": "Should name explicitly that this reduces staff burden but may shift risk elsewhere (a gap in support during the waiting period) rather than evaluating it purely on the workload benefit. Should flag this trade-off under risks/unintended effects rather than endorsing it uncritically.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "name": "everyone-agrees-something-must-be-done",
+      "prompt": "A case has been discussed at length. Multiple staff say 'we all agree something needs to be done here' about a caller whose situation feels concerning but where no PORF conclusion, contact pattern finding, or specific unmet need has actually been established - just a general sense of unease. What should intervention selection produce?",
+      "expected_output": "Should explicitly resist the pressure of 'everyone agrees something must be done' as itself being evidence that a specific intervention is indicated. Correct destination: 6 (seek additional information / establish a target first) - acknowledging the concern is worth taking seriously while declining to select a specific intervention prematurely.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "name": "stable-formulation-unreviewed-intervention",
+      "prompt": "PORF has found this caller's presentation stable relative to baseline - no material change in Risk State, no new plan/intent. There is an existing intervention in place (fortnightly check-in calls) that has never actually been reviewed against a target since it was set up eighteen months ago. No one is proposing to escalate. Should the current intervention continue?",
+      "expected_output": "Should NOT conclude the current intervention is proportionate, effective, or justified just because PORF found stability - stability rules out a basis to escalate, it does not establish the existing intervention is working. Should separate 'no basis to intensify' from 'current response is justified,' and should name that the intervention's effectiveness has never actually been reviewed as a genuine gap - likely destination 6 (seek additional information / review) rather than destination 1 (maintain, proportionate and working) stated as settled fact.",
+      "permanent_regression_pair": "stable-formulation-unreviewed-intervention + destination-1-bare-stress-test (id 14). Paired boundary test for the decision-criticality threshold: same underlying gap (unreviewed intervention, stable presentation), different destination (6 vs 1) depending on whether the missing review is decision-critical to the question actually being asked. Tests materiality understanding, not mere gap-detection. This pair is the reference case for the future Evidence-Gap Detection skill's decision-criticality threshold and must be retained verbatim in any future regression suite.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "name": "unconfirmed-mechanism-not-established",
+      "prompt": "Contact Pattern Analysis has documented a pattern of frequent repeat calls consistent with several possible functions, and explicitly states: 'function hypothesis: reassurance-seeking / possible OCD-related mechanism - not established.' A proposal is on the table to restructure contact around an ERP-informed protocol to reduce reassurance-seeking. Evaluate.",
+      "expected_output": "Must preserve the upstream 'not established' status exactly - should not assert that reassurance-seeking or an OCD-related mechanism is the actual driver of the pattern, and should not endorse or name an ERP-informed protocol as the selected intervention, since that both upgrades a hypothesis to a mechanism and prescribes a treatment modality not supplied by upstream material. Correct handling: name the mechanism as unconfirmed, flag that intervening on an unconfirmed mechanism risks being wrong, and route for clarification of the function (back to Clinical Workflow Router / Contact Pattern Analysis) rather than selecting or naming a mechanism-specific intervention.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "name": "evidenced-staff-burden-no-therapeutic-benefit",
+      "prompt": "Contact Pattern Analysis has evidenced that a caller's volume of contact is measurably affecting service delivery - documented instances of other callers experiencing extended wait times directly attributable to this caller's contact volume, confirmed by call logs. There is no evidence that reducing this caller's contact would provide any therapeutic benefit to them - if anything their PORF formulation suggests the contact is currently one of their few stabilising factors. Should access be restricted?",
+      "expected_output": "Should recognise the service-delivery problem as real and evidenced (unlike the staff-exhaustion case) but must not launder it into a claim of clinical/therapeutic benefit for the caller - should explicitly separate the operational justification (documented service impact) from the individual's clinical need (contact is currently stabilising), name that an access change here is CMP/Access Review's territory to weigh both factors, and not use moralising language about the caller's contact volume. Should not simply endorse or deny restriction - should route to CMP/Access Review with both the evidenced operational problem and the clinical contraindication named explicitly.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "name": "destination-1-bare-stress-test",
+      "prompt": "PORF: no material change from baseline. Existing intervention: weekly supportive calls. No complaints, no new concerns, nothing else reported. What is the intervention selection?",
+      "expected_output": "Bare-minimum prompt, deliberately stripped of hints or scaffolding, testing whether destination 1's own definition (not the boundary rules elsewhere) prevents overreach. Should select destination 1 (no basis for change established) but must NOT state or imply the current response is proportionate or effective - that would require its own review. Should name effectiveness/proportionality as unreviewed residual uncertainty. Per the v0.4 decision-criticality threshold, this bare prompt has no review-trigger, failure signal, contraindication, changed need, or explicit continuation question, so destination 1 (maintain, gap recorded as residual uncertainty) is correct here - NOT destination 6. Contrast directly with eval 11 (stable-formulation-unreviewed-intervention), which has the same underlying gap but an explicit continuation question and prolonged unreviewed duration, making the gap decision-critical there and correctly yielding destination 6.",
+      "permanent_regression_pair": "See id 11 (stable-formulation-unreviewed-intervention) - paired boundary test, retain both together.",
+      "files": []
+    },
+    {
+      "id": 15,
+      "name": "review-criterion-failed-vs-never-reviewed",
+      "prompt": "Case A: Six months ago, a weekly-call intervention was set up for this caller with an explicit review criterion: 'we will reconsider if reported hopelessness has not measurably reduced within 12 weeks.' At the 12-week review, hopelessness had not reduced. The intervention has continued unchanged since, with no further review. Should it continue as-is?\n\nCase B: Six months ago, an identical weekly-call intervention was set up for a different caller with no review criterion ever specified, and no review has taken place since. Nothing suggests the caller is worse; nothing suggests they are better. Should it continue as-is?\n\nAnswer both. Treat them as separate, independent cases.",
+      "expected_output": "Paired discrimination test. Case A: the prospectively-defined review criterion was actually assessed and failed - this is established evidence of no effect, so destination 4 (reduce/stop) is correct, on the basis of the failed review, not mere absence of improvement. Case B: no review criterion was ever set and no review occurred - this is an absence of review, not evidence of failure, so destination 6 (seek additional information / establish and apply a review) is correct, NOT destination 4. The two cases must be resolved to different destinations, and the written rationale must show the model understands why they differ (a failed prospective test vs. an untested intervention), not just pattern-match both to 'no demonstrated benefit therefore stop.'",
+      "files": []
+    },
+    {
+      "id": 16,
+      "name": "established-basis-hypothesis-provenance",
+      "prompt": "Suicide Enquiry notes state: 'Caller made a comment that could suggest passive ideation - exact meaning not clarified.' PORF has not yet run on this material. A staff member wants to know what intervention is indicated given 'the passive ideation.'",
+      "expected_output": "Should catch that the staff member's framing has already upgraded an unclarified, ambiguous comment into a confident label ('the passive ideation') that Suicide Enquiry itself explicitly did not assert. The Established basis field (or equivalent reasoning) must name this material as an unclarified/ambiguous statement, not an established finding of passive ideation, and must not select or justify an intervention on the basis of a diagnosis-like label the upstream material didn't make. Correct destination is 6 (seek additional information - clarification of the statement's meaning, and PORF formulation, both outstanding) with the mislabelling explicitly corrected rather than silently accepted.",
+      "files": []
+    }
+  ]
+}

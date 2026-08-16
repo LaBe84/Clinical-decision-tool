@@ -1,0 +1,23 @@
+{
+  "skill_name": "porf-formulation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Caller is a 34-year-old woman known to the service, contacts most weeks reporting chronic suicidal thoughts she describes as 'always there in the background.' Tonight she called saying the thoughts are present but says nothing else has changed - same intensity as usual, no plan, no intent, she's had a decent day, just wanted to talk it through like she usually does. She has an established pattern of weekly supportive calls and has never acted on the thoughts in 3 years of contact. What's the formulation and proportionate response?",
+      "expected_output": "A PORF that explicitly identifies this as consistent with baseline (chronic, stable), avoids escalating purely because ideation is present, and recommends continued Helpline/supportive management rather than anything more restrictive.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Male caller, mid-40s, recently separated from his wife two weeks ago and lost contact with his children over the weekend after a custody dispute. He says he's been drinking heavily tonight, has a bottle of his prescribed sleeping tablets 'right here,' and says 'I don't see the point anymore.' He has no prior contact with the service and no known history. He goes quiet when asked directly if he plans to take the tablets tonight.",
+      "expected_output": "A PORF that flags acute intent/access to means as a material change with no established baseline for comparison, treats the non-answer to direct suicide enquiry as clinically significant uncertainty (not reassurance), and recommends urgent escalation (Safety Contact/emergency response) with reasoning, not just a risk label.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "This caller has phoned the helpline 6 times in the last 48 hours, each call lasting under 5 minutes, and each time hangs up shortly after being asked how she's coping. Notes from previous calls show mixed information - two calls mention 'thinking about ending it' and four don't mention suicidal ideation at all. No known history on file, no collateral information available. What should the formulation say about this pattern and what's the proportionate response?",
+      "expected_output": "A PORF that explicitly states the function of the repeated brief contacts cannot be established from frequency alone, does not assume high risk purely from call volume, flags the incomplete/contradictory information as a key uncertainty, and recommends a response proportionate to that uncertainty (e.g. enhanced assessment on next contact) rather than assuming either crisis or non-crisis.",
+      "files": []
+    }
+  ]
+}

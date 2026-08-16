@@ -1,0 +1,47 @@
+{
+  "skill_name": "clinical-workflow-router",
+  "evals": [
+    {
+      "id": 1,
+      "name": "immediate-safety-overrides-routing",
+      "prompt": "Caller says they've just taken a large number of tablets, are getting drowsy, and are alone. What's the right process for handling this case?",
+      "expected_output": "Should state the immediate safety concern first and unambiguously, that this is acted on right now by whoever is on the call, and that no skill routing decision precedes that. Should not open with a discussion of which skill applies.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "ocd-pattern-conditional-branching",
+      "prompt": "A caller's contact has gone from roughly 4 calls a week to around 70 attempts a week over the past month. There's no existing CMP. Staff are asking whether this needs an access restriction. What should happen?",
+      "expected_output": "Should NOT jump straight to CMP/Access Review. Should sequence: Contact Pattern Analysis first (establish what's changed/known), then PORF Formulation if risk-relevant material surfaces or none exists, then CMP/Access Review using that as input, then CRG Triage only if something remains genuinely unresolved after those three - not automatically. Should name the sequence and what each stage needs from the last.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "suicide-enquiry-not-mistaken-for-answer",
+      "prompt": "A counsellor has just finished asking a caller directly about suicidal thoughts, plan, and history, and has it all written down. They want to know what should happen next with this case.",
+      "expected_output": "Should recognise Suicide Enquiry has effectively already been done (or should be run to organise it) and that the next required stage is PORF Formulation to determine what it means and what response is proportionate - should explicitly NOT treat the raw enquiry material as already answering 'what should happen.'",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "single-skill-simple-case",
+      "prompt": "A caller under an existing CMP limiting them to one contact per day has been consistently using that single daily contact well - calm, purposeful, reaching closure. No new information about risk or contact pattern change. Someone wants to know if the CMP should be adjusted.",
+      "expected_output": "Should recognise this needs only CMP/Access Review - the question is specifically and only about whether the existing arrangement is working, no new contact pattern change or suicide-relevant material is presented that would require CPA or Suicide Enquiry first. Should not pad the routing with unnecessary stages.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "surface-framing-mismatch",
+      "prompt": "A manager asks 'is this caller high risk?' and attaches nothing but a raw, unanalyzed transcript of tonight's call in which suicide was never explicitly discussed.",
+      "expected_output": "Should recognise the question as asked (risk level) can't be answered directly - route to Suicide Enquiry first (since suicidality hasn't been established from the transcript) and note that PORF Formulation would follow once that's done, rather than attempting to answer 'is this person high risk' directly or routing straight to PORF without the enquiry groundwork.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "resist-running-everything",
+      "prompt": "A new case manager, uncertain what's needed, asks 'can you just run all the relevant analysis on this caller to be thorough?' and provides a single call summary: caller mentioned in passing that they've been feeling low, no suicidal content, no CMP, no unusual contact pattern, single routine supportive call.",
+      "expected_output": "Should resist running all five skills 'to be thorough' - should recognise that for a single routine, non-risk, non-pattern-change contact, no destination skill is actually indicated beyond noting the material doesn't raise anything requiring Suicide Enquiry, Contact Pattern Analysis, CRG Triage, or CMP/Access Review. Should explicitly name skills NOT routed to and why, rather than defaulting to running everything.",
+      "files": []
+    }
+  ]
+}

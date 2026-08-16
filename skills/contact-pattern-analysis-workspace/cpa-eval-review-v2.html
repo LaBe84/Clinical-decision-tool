@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "contact-pattern-analysis", "runs": [{"id": "apparent-escalation-unchanged-baseline-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nOver the past 8 months this caller has contacted Lifeline 4-5 times per week,\nconsistently in the evening, in calls lasting 15-25 minutes. Content has\nconsistently concerned ongoing loneliness and low mood. Calls have\nconsistently ended the same way: the caller thanking the counsellor and\nagreeing a plan for the night. No history of pre-call disconnection, abrupt\nendings, or emergency escalation is reported. This is a well-established\nbaseline.\n\nObserved change\nThis week the caller contacted on 5 consecutive evenings, rather than her\nusual spread of 4-5 contacts across the week. Duration, content, and ending\nwere the same as usual on each of the 5 calls. No data is provided on\nattempted-but-unconnected contact (e.g. queue abandonment, pre-call\ndisconnection) this week; the analysis below is based on connected,\nsubstantive contact only, and that is a limitation, not an assumption that no\nother attempts occurred.\n\nEngagement pattern\nUnchanged from baseline: the caller engaged substantively on each call this\nweek (15-25 minutes, consistent with usual), and each call reached the same\nplanned, calm closure as before. There is no indication of reduced\nengagement, abrupt endings, or deteriorating tone on any of the 5 calls.\n\nPossible function\nFunction is not established from the available information. The recurring\ncontent (ongoing loneliness and low mood) and the consistent evening timing\nand calm closure are observed, repeated features of her contact \u2014 but nothing\nin the material shows the caller has directly and consistently stated why she\nis calling, so this remains a description of behaviour, not an evidenced\nfunction.\n\nWhat remains unknown\n- Whether any contact attempts this week did not connect (queue abandonment,\n  pre-call disconnection) \u2014 not reported either way.\n- Why the caller's contact clustered into 5 consecutive evenings rather than\n  her usual spread this particular week (no stated reason on record).\n- Whether this clustering has occurred before during the 8-month history, or\n  is a first occurrence.\n- Whether anything changed in the caller's circumstances this week that is\n  not reflected in call content.\n\nClinical significance\nTotal weekly volume (5 calls) sits within, not above, her established range\nof 4-5 calls per week \u2014 the change is in clustering (consecutive evenings\nvs spread across the week), not in frequency, duration, content, or\nengagement. This is a single week of altered spacing against an 8-month\nbaseline that has otherwise repeated unchanged; it is not yet evidence of a\nsustained or accelerating change, and there isn't enough history beyond this\none week to say whether the clustering will persist. The existing\nformulation (ongoing loneliness and low mood, managed through supportive\nevening contact ending in a agreed plan) continues to account for what was\nsaid and how each call ended. Nothing in this week's pattern indicates the\ncurrent response has stopped achieving planned, calm closure \u2014 each call\nthis week closed exactly as calls have closed for 8 months.\n\nTherefore\nHelpline. The pattern remains adequately explained by the existing\nformulation, and the response continues to reach its usual planned closure on\neach contact. The change observed (clustering into consecutive evenings\nwithin an unchanged weekly volume) is an isolated variation, not a sustained\nor unexplained shift, and does not on its own indicate a coordination gap or\nan unaccounted-for change in presentation. If this clustering persists beyond\nthis week, or if duration, content, or closure begin to differ from\nbaseline, the pattern should be reassessed at that point.\n"}], "grading": null}, {"id": "declining-volume-disengagement-not-improvement-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nFor several months, this caller contacted Lifeline 3\u20134 times a week, consistently engaging well and using the support to manage chronic distress. This is a genuine, well-established baseline: consistent frequency, consistent engagement, and a known purpose (management of chronic distress).\n\nObserved change\nOver the last 3 weeks, contact frequency has dropped from 3\u20134 times a week to once every 10 days \u2014 a large and sustained reduction from baseline, not a single unusual night. The two most recent calls were shorter than the caller's usual pattern, and both ended the same way: the caller said \"never mind, it doesn't matter\" and hung up before the counsellor could explore further.\n\nThis description is limited to connected, substantive-attempt contact as reported. No information is available on whether there have been additional attempted-but-unconnected contacts (e.g. calls terminated during a pre-call message, abandoned in a queue) during this period. If that data exists, it should be checked before treating the picture above as complete \u2014 an unseen layer of attempted contact could change the read on what's happening.\n\nEngagement pattern\nEngagement has changed in kind, not just in volume. Previously the caller engaged well throughout contact. In the two most recent calls, engagement dropped away partway through, and the caller pre-empted exploration by minimising (\"it doesn't matter\") and disconnecting before the counsellor could ask anything further. This is a change in how contact is used, not simply a change in how often it happens.\n\nPossible function \u2014 hypotheses only\nFunction is not established from the available information. Nothing in the material indicates what has changed for this person or why contact has become both less frequent and more abruptly terminated. Generating a list of plausible explanations (e.g. loss of trust in the service, increased risk, an unrelated life change, reduced distress) would create the appearance of formulation without adding anything the evidence actually supports, so none is offered here. The one thing the behaviour itself indicates, at the observational level, is that on the last two occasions the caller approached but did not complete a disclosure (\"never mind, it doesn't matter\") \u2014 this is an observed interaction pattern, not a stated reason, and should not be read as evidence of any specific underlying function.\n\nWhat remains unknown\n- Why frequency has dropped and stayed lower for three weeks.\n- What \"never mind, it doesn't matter\" refers to on either occasion.\n- Whether there have been any attempted-but-unconnected contacts in this window.\n- Whether anything relevant has changed in this person's circumstances, supports, or risk status.\n- Whether the shorter calls and early endings reflect the same underlying issue each time, or two separate, unrelated moments.\n\nClinical significance\nTwo separate questions apply here, and neither is answered yet.\n\nIs the pattern explained by the existing formulation? No. The existing formulation understands this person's contact as a way of managing chronic distress through frequent, well-engaged contact. The current pattern \u2014 markedly reduced frequency, shorter calls, and disconnection before exploration on the last two occasions \u2014 is not accounted for by that formulation as it stands. This is a sustained change (three weeks, not an isolated night) and it is unexplained, which is the specific condition that warrants checking whether the formulation still holds.\n\nIs the current response achieving its purpose? On the two most recent contacts, no \u2014 counsellors have twice attempted to explore what's changed and been unable to, because the caller ended the call first. That is not evidence the supportive-contact approach is failing overall, but it is evidence that, on the two most recent occasions, the intervention did not reach the point of finding out what it needed to find out. A drop in volume paired with early, avoidant disconnection is not evidence of resolution \u2014 declining contact is not, by itself, evidence of improvement, and here it is compounded by a change in how the caller is disengaging mid-conversation.\n\nTherefore\nCRG.\n\nThis is not a case of persistence alone, and not a visibility/coordination problem \u2014 the pattern is not split across multiple counsellors or channels in a way that's obscuring the picture; it has already been observed clearly and consistently by whoever took the last two calls. The trigger here is that the change is sustained (three weeks), the pattern and its function remain genuinely unexplained after the reasonable review the record allows, and the existing formulation's core assumption \u2014 that frequent contact is doing the work of managing this person's chronic distress \u2014 no longer clearly matches what's being observed, given that contact has dropped and the caller is now disengaging before the counsellor can explore what's happening. Twice being unable to complete exploration is itself relevant: it means the gap in understanding hasn't been closable through the ordinary course of the calls themselves.\n\nDirectly on the manager's question: no, the drop in volume should not be read as improvement. Reduced contact is not evidence of improvement on its own, and here it is accompanied by shorter calls and a new pattern of pre-emptive disconnection before disclosure \u2014 a change in the quality of engagement, not just its quantity. That combination is more consistent with disengagement than with resolution, but this analysis does not establish which it is; that determination sits with CRG, informed by whatever additional history and, where appropriate, formulation review follows from there.\n"}], "grading": null}, {"id": "function-cannot-be-inferred-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline. The caller has no prior contact history with the service before this week, so there is nothing from a previous period to compare the current week against. Everything below describes the first week of contact itself, not a change from a known baseline.\n\nObserved change\nOver the past seven days the caller has made 8 contacts. Only connected-contact data has been described \u2014 there is no information here about attempted contacts that may not have reached a counsellor (e.g. terminated in a pre-call message or abandoned in a queue), so this is a description of the connected subset only, not necessarily the whole contact pattern.\n\nWithin the 8 connected contacts:\n- Timing is irregular and unpredictable, spanning overnight and midday.\n- Duration varies widely, from 2 minutes to 40 minutes.\n- Content varies: on some calls the caller is distressed and discloses conflict at home; on others they are calm and discuss unrelated topics; on others there are long silences before the call ends.\n- A different counsellor has taken each contact.\n- There is no consistent stated reason for contact and no recurring theme across calls.\n\nEngagement pattern\nEngagement is mixed and does not follow a single pattern across the 8 contacts: some calls involve active disclosure and distress, some involve calm unrelated conversation, and some involve extended silence ending in the caller hanging up without a stated reason. How each contact ends is not uniform (no single closure type \u2014 e.g. planned closure, counsellor-initiated ending, or abrupt disconnection \u2014 is described as typical across the week). Because a different counsellor has taken every contact, no single counsellor has yet observed more than one contact directly, which limits what can currently be said about whether engagement is improving, worsening, or simply variable session to session.\n\nPossible function \u2014 hypotheses only\nFunction is not established from available information. The material shows variation across nearly every dimension \u2014 timing, duration, content, and presentation \u2014 with no stated reason from the caller and no consistent theme a hypothesis could be anchored to. Generating a list of plausible-sounding explanations (e.g. containment, testing the service, response to escalating distress) would not be supported by anything specific in the material and would create an appearance of formulation without adding information. These 8 contacts should be reviewed together for continuity, but that review has not yet established whether they represent one unfolding presentation or several different, unrelated contact purposes \u2014 that is a question the coordinated review below is for, not a conclusion this analysis can draw from the pattern alone.\n\nWhat remains unknown\n- Whether there are attempted contacts (pre-call disconnections, abandoned queue attempts) beyond the 8 connected contacts described \u2014 this has not been reported and is a gap, not evidence that none occurred.\n- Any reason the caller has given, directly or indirectly, for making contact this week, beyond the content of individual calls.\n- Whether the home conflict disclosed on some calls is ongoing, escalating, or resolving.\n- What the caller has said, if anything, about why they go silent on some calls.\n- Whether any of the 8 counsellors flagged concern at the time, or whether this is only visible now in aggregate.\n- Whether this level of contact is expected to continue, and whether the caller has any prior relationship with crisis or mental health services elsewhere (not visible in this service's own history).\n\nClinical significance\nThe pattern is not currently explained by any existing formulation, because no prior contact history or formulation exists for this caller \u2014 this is the first record of contact. Separately, because contact has been split across 8 different counsellors with no consistent theme identified, no single person currently holds a full picture of this caller's week; that is a visibility question distinct from whether the underlying presentation itself is understood. Both points count against treating this as adequately understood or adequately managed at this stage, independent of how much contact there has been.\n\nTherefore\nTL/Safety Huddle. The pattern is new (no baseline), and contact has been split across 8 different counsellors in one week with no consistent theme identified and no single person holding the full picture \u2014 a coordination and visibility gap that needs joining up before the pattern, or its function, can be properly understood. This conclusion follows from the fragmentation of the picture across contacts, not from the volume of contact or the presence of distress content on some calls; it should not be read as an assumption that risk is elevated. Whether the underlying presentation turns out to be one unfolding situation or several unrelated reasons for contact is exactly what the coordinated review needs to establish \u2014 it is not something this analysis can determine from the pattern alone.\n"}], "grading": null}, {"id": "hidden-pre-call-disconnections-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline is described for this caller prior to the current\n10-day window. What is available is only a description of the 6 connected\ncalls within that window (calm, coherent, supportive conversations lasting\n10-20 minutes each with clear closure) \u2014 this is not a pre-existing baseline\nto compare against, it is part of the current window itself. Whether this\ncaller's usual pattern differs from what is seen here is not established from\nthe material provided.\n\nObserved change\nOver the past 10 days, the caller made 70 total attempted contacts.\n- Connected contact: 6 of 70 attempts (9%) reached a counsellor. These are\n  documented as calm, coherent, supportive conversations, 10-20 minutes each,\n  with clear closure.\n- Attempted-but-unconnected contact: 64 of 70 attempts (91%) terminated\n  during the automated pre-call message, before reaching a counsellor. There\n  is no record of what, if anything, was said or intended during any of these\n  64 attempts.\n- No one has reviewed the 64 disconnected attempts as a group before now. The\n  existing clinical picture of this caller has been built entirely from the\n  6 connected calls \u2014 9% of total contact activity.\n\nThis is an observation about what the record contains and does not contain,\nnot a characterisation of what the 64 disconnected attempts mean.\n\nEngagement pattern\nFor the 6 connected calls, engagement is documented as good: calm, coherent,\nsupportive conversation with clear closure each time. For the 64 disconnected\nattempts, there is no engagement data at all \u2014 no record of whether the\ncaller stayed on the line briefly, hung up immediately, was cut off, or\nanything else about what happened during the pre-call message window. This is\na genuine gap, not evidence of any particular engagement level.\n\nPossible function \u2014 hypotheses only\nFunction is not established from available information. There is no record\nof what, if anything, the caller intended or communicated during the 64\ndisconnected attempts, and the 6 connected calls do not themselves speak to\nwhy the other 64 attempts occurred or ended where they did. Generating a list\nof plausible-sounding explanations for the 64 attempts (e.g. testing\navailability, changing their mind, technical drop-out) would not be supported\nby anything in the material and is not included here.\n\nWhat remains unknown\n- What happened during any of the 64 pre-call disconnections \u2014 content,\n  duration on the line, or reason for termination \u2014 is entirely unknown.\n- Whether the 64 disconnected attempts represent one unfolding presentation,\n  several different contact purposes, or a mix, is unknown; they have not yet\n  been reviewed together.\n- Whether the 64 attempts cluster in particular time windows, follow a\n  particular pattern relative to the 6 connected calls, or are evenly spread\n  across the 10 days is not stated in the material provided and would need to\n  be established before further characterisation.\n- Whether this represents a change from the caller's usual attempt-to-connect\n  ratio is unknown, because no baseline exists.\n\nClinical significance\nThe existing formulation, such as it is, has been built entirely from the 6\nconnected calls \u2014 the calm, coherent, well-closed 9% of total contact\nactivity. It does not account for the 64 disconnected attempts because no one\nhas looked at them as a group before now. This means the current picture\ncannot be said to adequately explain the caller's overall contact pattern:\nthe visible evidence of good engagement in 6 calls says nothing reliable\nabout what is happening in the 91% of attempts that never reached a\ncounsellor. This is not evidence that something is clinically wrong with the\ncaller \u2014 it is evidence that the picture held by the service is incomplete,\nand incomplete in a way that has not previously been identified.\n\nTherefore\nTL/Safety Huddle.\n\nThis is a visibility and coordination problem, not yet a question of whether\nthe underlying pattern is concerning: the recorded clinical picture for this\ncaller is based on only 9% of total attempts (6 of 70), with the remaining\n91% (64 of 70) never reviewed as a group and containing no record of content\nor intent. That gap needs to be joined up \u2014 the 64 disconnected attempts\nreviewed together for clustering, timing, and any other structure the raw\nlog can show \u2014 before the pattern can be properly understood, regardless of\nwhether the underlying function turns out to be benign once that review is\ndone. This is not, on the current information, a CRG trigger: nothing yet\nshows the pattern or its function remains unexplained after adequate review,\nor that the existing intervention is failing to achieve its purpose, because\nthat review has not yet happened. It also is not simply Helpline-only,\nbecause a formulation built on 9% of contact activity is not one that can be\nsaid to adequately account for the pattern as a whole.\n"}], "grading": null}, {"id": "isolated-dramatic-spike-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline. This is the caller's first recorded contact with the service \u2014 there is no prior history against which to judge frequency, typical duration, timing, or usual engagement level.\n\nObserved change\nNot applicable in the usual sense, since there is no baseline to compare against. What can be stated is the single observation available: one attempted contact, which connected, and which became substantive engagement \u2014 a 45-minute call in which the caller discussed a specific acute stressor (job loss and an eviction notice received the same day). No data exists on any pre-call disconnections or other attempts, since none are reported; this is not a limitation flagged from missing records, it is simply the full extent of contact to date.\n\nEngagement pattern\nThe caller was highly distressed at the outset. Over the course of the call they engaged substantively with the counsellor, and by the end reported feeling calmer and had identified concrete next steps. The call reached a planned closure rather than an abrupt or counsellor-initiated ending, and the caller agreed to call back if needed. No recontact has occurred in the two weeks since.\n\nPossible function \u2014 hypotheses only\nNot a hypothesis in this instance: the caller directly described what prompted the call \u2014 an acute, dateable crisis (same-day job loss and eviction notice) \u2014 and this was consistent with how the call was used (working through the immediate crisis to identified next steps). This can be described as the observed function of this single contact at the behavioural level. It should not, however, be treated as a complete account of the caller's underlying circumstances or of what future contact, if any, might be for \u2014 with only one contact, there is no basis to generalise it into a pattern or a diagnosis of ongoing need.\n\nWhat remains unknown\nEverything about how this caller uses the service outside this one contact: whether the absence of recontact reflects resolution, avoidance, use of another support, reduced capacity to reach out, or something else entirely. Two weeks of non-contact after a single first call is a short window and, per this skill's invariants, non-contact is not itself evidence of improvement \u2014 it is simply the current state of the record. There is also no information on any attempted-but-unconnected contact, since none has been reported.\n\nClinical significance\nThe single available contact is well explained: an acute, specific precipitant, a substantive connected call, and a closure with concrete next steps identified \u2014 this is not an unexplained or fragmented picture. Within this one contact, the response also appears to have achieved something concrete (de-escalation and a next-steps plan), rather than merely running alongside the distress without effect. There is no persisting or unexplained pattern to assess, because there is only one data point; persistence and magnitude cannot yet be evaluated for a caller with a single contact.\n\nTherefore\nHelpline. The one contact on record is adequately explained, was substantively engaged, and closed with an identified plan rather than an unresolved or ambiguous ending. There is no visibility gap (a single call, fully connected, is not split across multiple people or disconnected attempts) and no unexplained or accelerating pattern to justify TL/Safety Huddle or CRG. Two weeks of subsequent non-contact does not, on its own, change this \u2014 non-contact is not evidence of either improvement or deterioration, and with only one prior contact there is not yet a \"pattern\" whose absence of continuation would itself be meaningful. If the caller does make further contact, that contact should be reviewed alongside this one to see whether a pattern is starting to form, rather than assuming continuity or a resolved case either way.\n"}], "grading": null}, {"id": "reassurance-seeking-function-supported-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo baseline exists from before this behaviour started. What is available describes only the six weeks now on record, and within that window the pattern has itself been stable and consistent: daily contact, occurring at almost exactly the same time each day (shortly after his usual medication dose), each call brief (5\u20138 minutes), following the same shape \u2014 he asks the counsellor to confirm he \"did the right thing\" taking his medication and that he hasn't overdosed, receives reassurance, thanks the counsellor, and ends the call. There is no record of what contact (if any) looked like before this six-week pattern began, so it cannot be said whether this represents a change from an earlier pattern or is the only pattern on record for this person.\n\nObserved change\nWithin the six-week window there is no material change to characterise \u2014 frequency, timing, duration, and call content have remained consistent throughout. The data available is connected, substantive contact (calls that reached a counsellor and were engaged with, briefly). There is no information here on attempted-but-unconnected contact (calls terminated before reaching a counsellor, abandoned in queue, or otherwise not captured) \u2014 this is a limitation on the picture, not evidence that no such attempts exist. Any conclusion below is based on the connected-contact subset only.\n\nEngagement pattern\nEngagement is brief and tightly scripted rather than open-ended: he raises a specific, consistent question (confirmation that he took his medication correctly and has not overdosed), the counsellor responds, he thanks them, and the call ends \u2014 a pattern that has repeated in essentially the same form daily for six weeks. No suicidal ideation, self-harm, or distress content beyond this specific checking behaviour has been recorded in any call.\n\nPossible function \u2014 hypotheses only\nThis is not a hypothesis-list case. The function is directly evidenced: he has told two separate counsellors, in consistent terms, exactly what he is calling for and why \u2014 post-dose reassurance-seeking, checking that he has taken his medication safely and not overdosed. Per the skill's distinction, this is described here as the observed function at the behavioural level, not as one hypothesis among several. This does not, however, amount to a full clinical explanation of the underlying need driving the checking behaviour (e.g. why medication-taking specifically has become a focus of this level of doubt) \u2014 that remains outside what contact-pattern analysis alone can establish.\n\nWhat remains unknown\n- Whether any pattern existed before this six-week window, and if so what it looked like.\n- Whether there have been unconnected or pre-call-disconnected attempts alongside the six weeks of connected contact recorded here.\n- Whether the underlying medication-safety doubt/checking behaviour has a formulation elsewhere (e.g. GP, mental health team, existing safety or care plan) that this contact pattern should be read against.\n- Whether frequency, duration, or content has shifted at all over the six weeks (the material as given describes a static pattern, but this should be confirmed against the full log rather than assumed).\n\nClinical significance\nTwo separate questions apply here, and they don't have the same answer.\nIs the pattern explained? Yes \u2014 better explained than most cases this skill sees. The function is directly and consistently evidenced by his own account to two counsellors, not inferred.\nIs the existing response achieving its purpose, or maintaining the cycle it responds to? This is the open question. Six weeks of daily, same-time, same-script reassurance that resolves cleanly every time is a stable pattern, not, by itself, evidence that reassurance is resolving anything. A post-dose reassurance-seeking pattern that has neither reduced in frequency nor changed in form after six weeks of the same response being given daily is consistent with the reassurance itself maintaining the checking behaviour rather than addressing it \u2014 the daily call may be functioning as the mechanism that lets the checking continue unchanged, rather than as an intervention resolving it. That reading is not established as fact from contact pattern alone, but the persistence of an identical cycle for six weeks straight is enough to make it a live question rather than a reassuring sign.\n\nTherefore\nCRG.\n\nThe pattern is well explained and there is no immediate coordination/visibility problem within the six-week window itself (the same behaviour has been consistently reported, not scattered incoherently across disconnected fragments). What is missing is evidence that the current response \u2014 daily reassurance \u2014 is achieving anything beyond running alongside the checking behaviour it responds to. With function this clearly evidenced and the pattern unchanged in frequency or form after six weeks of an identical response, the question of whether the intervention needs to change (for example, whether the underlying medication-safety anxiety needs addressing directly rather than met with a fresh reassurance cycle each day) should go to CRG. This is not triggered by frequency or persistence alone \u2014 it follows specifically because the intervention does not appear to be moving the underlying need, only meeting it daily in the same way. Separately, since this has now surfaced independently to two different counsellors, it is also worth confirming that the existing formulation or care record for this caller has actually consolidated this information rather than relying on it being noticed again by chance.\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {"apparent-escalation-unchanged-baseline-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nEight months of contact history. Usual frequency 4-5 calls per week, spread\nacross the week rather than clustered. Calls consistently occur in the\nevening. Typical duration 15-25 minutes. Recurring content: ongoing\nloneliness and low mood, supportive/talking-based contact. Calls typically\nend in a planned, counsellor-agreed closure \u2014 caller thanks the counsellor\nand agrees a plan for the night. No history described of emergency\nescalation, pre-call disconnection, or abrupt/counsellor-initiated endings.\nThis is a well-established baseline, not an inference from a single window.\n\nObserved change\nThis week the caller made 5 calls on 5 consecutive evenings, rather than the\nusual spread of 4-5 calls across the week. This is the only observed change.\nDuration (15-25 minutes), content (loneliness, low mood), and ending (calm,\nplanned, caller-thanked-counsellor-and-agreed-a-plan) are all reported as\nunchanged from baseline.\n\nNote on data available: this analysis is based on connected, substantive,\ncompleted contact only (calls that reached a counsellor and ran their usual\ncourse). No information is given about attempted-but-unconnected contact\n(pre-call disconnections, abandoned queue attempts) this week or historically.\nIf such attempts exist and haven't been reviewed, that is a gap, not evidence\neither way about the pattern as a whole.\n\nEngagement pattern\nUnchanged. Each call this week reportedly showed the same engagement,\ncontent, and calm, planned ending as the established baseline. There is no\nreport of reduced engagement, rapid recontact after a call ends, distress at\ndisconnection, or any deviation in how contact concluded.\n\nPossible function \u2014 hypotheses only\n- Continuation of the caller's established use of the service for\n  containment, regulation, and connection around chronic loneliness and low\n  mood \u2014 the same function the baseline pattern already reflects.\n- A short-term increase in need for evening support this week (e.g. a\n  harder week, an anniversary, a change in circumstances) that hasn't\n  otherwise surfaced in call content.\n- Chance clustering \u2014 calling on consecutive evenings rather than a spread\n  across the week may reflect scheduling/logistics rather than any change in\n  underlying state.\nThese are not distinguished by the data available. Nothing in the material\nsupports selecting one over the others; the content and ending of the calls\nthemselves have not changed, which does not favour the \"increased need\"\nhypothesis over the others.\n\nWhat remains unknown\n- Whether any contact attempts this week failed to connect or were\n  abandoned before reaching a counsellor (attempted-contact data not\n  provided).\n- What, if anything, changed in the caller's circumstances this week that\n  might explain consecutive-evening calling rather than a spread.\n- Whether this is the first time this caller's contact has clustered this\n  way in 8 months, or whether occasional clustering has occurred before\n  without being flagged \u2014 the baseline as described states \"usual spread\"\n  but does not confirm this is a first-time deviation.\n\nClinical significance\nThe only observed change is the distribution of otherwise-identical contacts\nwithin a single week (spread across the week versus five consecutive\nevenings), while frequency (5 calls, within the existing 4-5/week baseline),\nduration, content, and ending all remain unchanged. This is a minor,\nsingle-week variation in clustering, not a change in volume, engagement, or\noutcome. On the information given, it does not indicate the existing\nformulation or intervention has stopped working \u2014 the caller is still\nreaching the same supportive endpoint each time. It has not yet been shown\nto be a sustained or accelerating change, since it spans one week only.\n\nTherefore\nHelpline \u2014 the pattern is adequately understood and the current response\nremains proportionate. Frequency this week sits within the caller's\nestablished range, and duration, content, and ending are unchanged; a shift\nin which evenings the calls fall on, alone, is not evidence of escalation.\nThis should not be labelled \"escalating contact\" on the basis of clustering\nalone. If clustering persists or extends beyond this week, or if duration,\ncontent, or ending change, that would warrant re-analysis rather than\ncarrying this label forward unexamined.\n"}], "declining-volume-disengagement-not-improvement-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nFor several months, this caller contacted Lifeline 3\u20134 times a week, consistently engaging well and using the calls to manage chronic distress. This is a clear, well-established baseline: high-frequency, connected, substantive contact with good engagement once connected.\n\nObserved change\nOver the last 3 weeks, contact frequency has dropped from 3\u20134 times a week to once every 10 days \u2014 a substantial and sustained reduction, not a single unusual gap. In addition, the last two calls were shorter than the caller's usual pattern and ended with the caller saying \"never mind, it doesn't matter\" before hanging up, before the counsellor could explore further. This is a change in both volume and in how contact is ending, not volume alone.\n\nNo information is available on attempted-but-unconnected contact (e.g. calls terminated in a pre-call message, abandoned in queue) for this caller. This analysis is based only on connected/completed contact data. Whether attempted contact has also dropped, stayed level, or increased is unknown, and that gap should be treated as a limitation, not assumed to be zero.\n\nEngagement pattern\nEngagement has changed on two dimensions at once: fewer contacts, and \u2014 within the contacts that do happen \u2014 an emerging pattern of curtailed engagement (shorter calls, self-interruption, abrupt disconnection before the counsellor could explore the \"never mind\" comment). This is a shift away from this caller's established, well-engaged style, not a continuation of it at lower volume.\n\nPossible function \u2014 hypotheses only\nPlausible readings include, without preference:\n- The caller's underlying distress has reduced and the need for contact has genuinely eased.\n- The caller is experiencing a change (new stressor, disengagement from support, loss of trust in the service, practical barrier to calling) that is reducing both their capacity and willingness to reach out.\n- The caller began to disclose something (\"never mind, it doesn't matter\") and disengaged before it could be explored \u2014 this could reflect shame, ambivalence, a worsening they are not yet ready to voice, or a testing-the-water pattern.\n- Reduced reliance on the helpline because support has been found elsewhere (a different service, a person, a change in circumstances).\n- A capacity change unrelated to distress level (e.g. practical, situational).\n\nThe data does not distinguish between these. The pairing of falling frequency with shorter, self-terminated, unexplored calls is at least as consistent with withdrawal or a suppressed disclosure as it is with improvement, and there is no positive evidence \u2014 no caller statement, no collateral information \u2014 that supports the \"things are improving\" reading over the others.\n\nWhat remains unknown\n- Why frequency has dropped: no direct account from the caller.\n- What \"it doesn't matter\" refers to \u2014 content was never explored.\n- Whether attempted-but-unconnected contact (pre-call disconnections, abandoned calls) has changed, since only connected-contact data is available here.\n- Whether anything has changed in the caller's circumstances, support network, or safety.\n- Whether this reduced-and-shortened pattern will continue, deepen, or reverse \u2014 three weeks of a new pattern is a sustained change, not an isolated night, but there is not yet a long enough window to know its trajectory.\n\nClinical significance\nThe existing formulation was built around a caller who reliably self-initiated frequent, substantive contact to manage chronic distress. That pattern has now changed on two fronts at once (frequency and engagement-on-connection) for three consecutive weeks, and the two most recent contacts ended with unexplored, abruptly curtailed disclosures. Nothing in the current picture confirms the change is accounted for by the existing formulation \u2014 there is no update to the formulation reflecting why the person who used to call reliably now isn't, and no exploration yet of what \"it doesn't matter\" means. This is a sustained, unexplained change in a previously well-understood pattern, not a single unusual night.\n\nTherefore\nCRG \u2014 the pattern represents a sustained (3-week), two-dimensional change (reduced frequency plus curtailed, unexplored disconnections) in a previously well-established and well-engaged contact pattern, and its function remains genuinely unexplained. Declining contact volume alone is not evidence of improvement, and should not be read as such by the manager or in the record; the abrupt, unexplored endings on the two most recent calls are a specific new feature that the current formulation does not account for. This is an oversight/formulation question, not an assertion of imminent risk \u2014 but it needs review to establish what has changed for this person, not adoption of the \"things are improving\" explanation by default.\n"}], "function-cannot-be-inferred-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline. This caller has no prior contact history with the service before this week, so there is no \"usual\" frequency, duration, timing, engagement level, or closure pattern to compare against. Everything below describes a first week of contact, not a change from a known baseline \u2014 that distinction matters and is carried through the rest of this analysis.\n\nObserved change\nSince there is no baseline, \"change\" here means the internal shape of this first week's contact, not a deviation from prior behaviour. Eight contacts in seven days, at irregular and unpredictable times (overnight and midday, no discernible schedule). Duration is highly variable across contacts (2 to 40 minutes). Presentation varies contact to contact: sometimes distressed with disclosure of conflict at home, sometimes calm and discussing unrelated topics, sometimes long silences ending in the caller hanging up. Eight different counsellors, no repeated counsellor. No consistent stated theme or reason for contact across the eight instances.\n\nThis description covers connected contact only. No data has been provided on attempted contact that did not connect (calls terminated during a pre-call message, abandoned in queue, dropped before pickup). If such attempts exist and haven't been reviewed, the true contact volume and pattern could be materially different from what is described here \u2014 this is a limitation, not an assumption resolved in either direction.\n\nEngagement pattern\nEngagement is inconsistent within the week itself: some contacts show active disclosure and distress, some show calm unrelated conversation, and some show prolonged silence followed by disconnection without disclosure. There is no single engagement mode that characterises this caller yet \u2014 the record shows at least three distinct engagement styles across eight contacts. Because a different counsellor took each contact, no one has yet observed this pattern across more than a single instance, which limits any counsellor's ability to compare a given contact to this caller's \"normal.\"\n\nPossible function \u2014 hypotheses only\nSeveral hypotheses are plausible and the material does not yet distinguish between them:\n- Testing or establishing the service as a reliable point of contact (checking availability, what happens, whether it's safe to disclose).\n- Seeking containment or regulation during acute but variable distress, without yet being able to name or sustain a specific disclosure.\n- An attempted disclosure (the conflict-at-home content) that hasn't yet landed or been followed through, interspersed with contacts that serve a different, calmer purpose.\n- Loneliness, need for connection, or use of the calls as a regulating routine independent of crisis content.\n- The silent/hang-up contacts could reflect difficulty initiating disclosure, ambivalence about contacting the service, a test of response, or an unrelated cause (technical issue, interruption) \u2014 the data does not support choosing between these.\n\nNo single hypothesis is better supported than the others by what's described. In particular, the conflict-at-home disclosure should not be treated as \"the\" explanation for the whole week's pattern \u2014 it is one thread among several, not an established through-line.\n\nWhat remains unknown\n- Whether this represents the caller's ongoing pattern or an unusual first week that may settle, escalate, or stop.\n- Whether any attempted-but-unconnected contact exists (pre-call disconnections, abandoned queue attempts) \u2014 no data on this has been provided, and its absence should not be read as evidence there were none.\n- Why contact is occurring at unpredictable/overnight times \u2014 no context (e.g. sleep disruption, availability of others, timing of conflict at home) is available.\n- What the silences represent \u2014 no information on what preceded or followed them beyond the hang-up itself.\n- Whether the conflict-at-home disclosure reflects an ongoing situation, a single incident, or an escalating one \u2014 insufficient detail given.\n- Whether the caller has any other means of support, and whether this service is a primary or supplementary contact point for them.\n\nClinical significance\nThere is not yet a formulation or intervention in place for this caller \u2014 this is a first week of contact with no prior history, so the question is not whether an existing plan adequately accounts for the pattern (there isn't one), but whether the pattern as it stands is understood well enough to be confident no coordination is needed. It is not: eight contacts with eight different counsellors, no consistent theme, and highly variable presentation means no one holds a full picture of this caller yet, and the disclosed conflict-at-home content has not been followed up by anyone with continuity across contacts. This is a genuine gap in continuity, independent of whether risk is elevated.\n\nTherefore\nTL/Safety Huddle \u2014 the pattern itself is not yet fragmenting for safety reasons or confirmed as safe; the issue is that contact is spread across eight different counsellors within one week with no consistent theme, a partial disclosure of home conflict that hasn't been followed up, and no one holding a continuous picture of this caller. This needs joining up so that a single view of the week is established and the disclosed conflict is not lost between contacts, even though the underlying function of the calling pattern remains genuinely unresolved at this stage. This is a continuity/coordination need, not a determination that risk is elevated \u2014 that question is separate and, if warranted, belongs to a PORF informed by this analysis.\n"}], "hidden-pre-call-disconnections-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline is provided. We have no data on this person's contact\nfrequency, duration, or engagement prior to this 10-day window, so there is\nnothing to compare the current window against. Whatever is described below\nis a description of a single window, not a change from a known baseline.\n\nObserved change\nOver 10 days, 70 attempted contacts were made. Of these:\n\n- Attempted contact: 70 total.\n- Connected contact: 6 attempts reached a counsellor.\n- Substantive engagement: all 6 connected calls are documented as calm,\n  coherent, supportive conversations lasting 10\u201320 minutes with clear\n  closure.\n- Completed intervention: on the documented evidence, the 6 connected calls\n  appear to have concluded as intended (supportive contact delivered, planned\n  closure).\n- Pre-call disconnection: 64 attempts (91% of total contact volume)\n  terminated during the automated pre-call message, before reaching a\n  counsellor. There is no record of what, if anything, the caller said or\n  intended during these attempts. No one has reviewed these 64 attempts as a\n  group before this analysis.\n\nThis is an observation of two very different volumes sitting side by side:\na small, well-documented set of connected calls, and a much larger,\nundocumented set of attempts that never became calls.\n\nEngagement pattern\nFor the 6 connected calls, engagement is known and appears settled: calm,\ncoherent, supportive, with clear closure each time. For the 64 pre-call\ndisconnections, engagement is entirely unknown \u2014 there is no record of\nwhether the person stayed on the line briefly, hung up immediately, was cut\noff, redialled repeatedly in short succession, or anything else about how\nthese attempts unfolded. This is a genuine data gap, not evidence of low or\nabsent engagement.\n\nPossible function \u2014 hypotheses only\nWhat the 64 pre-call disconnections represent cannot be determined from the\navailable record. Plausible, unresolved hypotheses include:\n\n- The person is finding the automated pre-call message itself a barrier\n  (length, content, or wait time) and disengaging before a counsellor is\n  reached.\n- The attempts reflect fluctuating capacity or ambivalence about\n  disclosure \u2014 reaching for contact, then withdrawing before connection.\n- Some or all attempts are redials after being cut off or queued, rather\n  than 64 independent decisions not to continue.\n- The attempts reflect an escalating need for contact that the 6 connected\n  calls alone do not capture.\n- Some attempts may be unrelated to distress (misdials, service testing,\n  technical issues) \u2014 this cannot be ruled out or confirmed.\n\nNone of these is better supported than the others on the current record. The\n6 calm, connected calls do not resolve what the 64 disconnections mean; they\ndescribe a different, smaller subset of contact.\n\nWhat remains unknown\n- What happened during any of the 64 pre-call disconnections \u2014 content,\n  duration on the line, whether the person spoke at all.\n- Whether the 64 attempts are 64 independent decisions or a smaller number\n  of underlying attempts with repeated redialling.\n- Any baseline for this person's usual contact pattern, so it is not\n  possible to say whether 70 attempts in 10 days is itself a change.\n- Clustering/timing detail on the 64 disconnected attempts (time of day,\n  spacing) is not provided here and has not yet been reviewed.\n- Whether the pre-call message itself is a contributing factor to the\n  disconnection rate.\n\nClinical significance\nThe existing record and response account only for the 6 connected calls,\nwhich on their own look like a manageable, well-understood pattern of\nsupportive contact. But those 6 calls are 9% of this person's total contact\nvolume over the period. The 64 pre-call disconnections \u2014 the large majority\nof contact \u2014 have not been reviewed as a group before now and are entirely\nunaccounted for by the current formulation. This is not evidence that\nsomething is clinically wrong; it is evidence that the current picture is\nbuilt from a subset of the person's contact and that the remaining 91% is an\nunexamined gap. That gap, on its own, is a coordination and visibility\nproblem regardless of what it eventually turns out to mean.\n\nTherefore\nTL/Safety Huddle \u2014 Contact is fragmenting across a large volume of\npre-call-disconnected attempts (64 of 70, over 10 days) that no one has\nreviewed as a group, alongside a small set of connected calls that looks\nreassuring in isolation but does not represent the caller's overall contact\npattern. This is a continuity and visibility issue that needs joining up:\nsomeone needs a full picture of all 70 attempts, and consideration of\nwhether the pre-call message or connection process itself is a factor,\nbefore any conclusion is drawn about what this pattern means. The data does\nnot yet establish a sustained, unexplained change of the kind that would\nwarrant CRG, nor does it establish that the pattern is adequately understood\nand managed, which would warrant no further action.\n"}], "isolated-dramatic-spike-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo established baseline. This is a first contact \u2014 there is no prior call history for this person, so nothing about frequency, typical duration, usual engagement, recurring themes, or typical mode of ending can be said to be \"usual\" for them. A single data point cannot be used to infer a baseline.\n\nObserved change\nNot applicable as a \"change,\" since there is no baseline to change from. What can be stated as observation only:\n- One attempted contact, which connected to a counsellor (connected contact).\n- Duration 45 minutes.\n- The caller was highly distressed at the start of the call, discussing a specific, acute, dateable stressor (job loss and eviction notice received the same day).\n- The call involved substantive engagement \u2014 the caller stayed with the conversation rather than disconnecting or disengaging.\n- It reached the level of completed intervention \u2014 the call ended with the caller reporting feeling calmer and having identified concrete next steps, and the caller agreed to call back if needed.\n- No further contact (attempted or connected) in the two weeks since.\n\nData limitation: this analysis is based only on what is described as one connected, completed call. There is no information here about pre-call disconnections, abandoned queue attempts, or other attempted-but-unconnected contact in this window \u2014 if such data exists, it has not been reviewed here, and its absence should not be read as evidence that no other attempts occurred.\n\nEngagement pattern\nWithin the single call, engagement moved from high distress to a calmer state, with the caller able to identify and articulate concrete next steps by the end. This is a within-call trajectory, not a cross-call pattern \u2014 there is only one call to observe it in.\n\nPossible function \u2014 hypotheses only\nThe call is consistent with several functions, and the data does not distinguish between them:\n- Containment and regulation in response to a genuinely acute, time-limited crisis (the job loss/eviction notice), with the call serving its evident purpose.\n- Testing or establishing the service as a viable resource, which could be relevant to whether or how the person recontacts in future.\n- Problem-solving support specific to the practical crisis, now at least partially addressed by the identified next steps.\n- A first disclosure of broader distress that this particular crisis gave the person an opening to raise, which may or may not represent the whole picture.\n\nNone of these is preferred by the material available; the call content and outcome are consistent with the first and third being most directly evidenced, but that should not be read as ruling out the others.\n\nWhat remains unknown\n- Whether this is truly the person's first-ever contact with the service or simply the first recorded contact in the data reviewed.\n- Whether any attempted-but-unconnected contacts (pre-call disconnections, abandoned attempts) have occurred in the two weeks since, since only connected/completed contact has been described here.\n- Whether the practical crisis (job loss, eviction) has actually resolved, worsened, or remains unaddressed since the call \u2014 the call ending with \"identified next steps\" is not evidence those steps were taken or worked.\n- Whether the absence of further contact reflects the crisis resolving, the person coping independently, the person seeking help elsewhere, or reduced willingness/capacity to re-contact.\n- Any relevant history predating this service's records (other services, prior crises) that isn't visible here.\n\nClinical significance\nA single connected call, with clear precipitant, high initial distress, substantive engagement, a completed intervention (de-escalation plus identification of concrete next steps), and an explicit agreement to call back if needed, is an adequately explained and adequately managed presentation on the information available. There is no persisting or accelerating pattern here to be explained \u2014 there is one data point, which is itself the entire \"pattern\" so far. The two weeks of non-contact since is not, on its own, either a reassuring or a concerning finding: absence of contact is not evidence of improvement, but nor does it constitute an unexplained or escalating contact pattern requiring oversight. Isolated variation cannot be distinguished from a sustained pattern here because there is no second data point \u2014 this is expected and appropriate at this stage, not a gap that needs to be filled by inference.\n\nTherefore\nHelpline \u2014 the single contact is well understood on its own terms (clear precipitant, substantive engagement, completed intervention, explicit re-contact agreement), and the current response (closure with an open invitation to call back) remains proportionate. There is no persisting or unexplained pattern of contact to justify TL/Safety Huddle or CRG involvement at this time. This conclusion covers the contact pattern only \u2014 it says nothing about whether the underlying situation (job loss, eviction) still carries risk that would be picked up in a PORF if further contact or other information becomes available. If a second contact occurs, particularly one that doesn't resolve as cleanly, or if any attempted-but-unconnected contacts come to light, this pattern should be re-assessed rather than assumed to still be \"one clean call.\"\n"}], "reassurance-seeking-function-supported-with_skill": [{"name": "output.md", "type": "text", "content": "CONTACT PATTERN ANALYSIS\n\nEstablished pattern\nNo baseline predating this behaviour is described. What can be stated is that, over 6 weeks, the caller has established a highly consistent pattern in its own right: contact daily, at almost exactly the same time (shortly after his usual medication dose), each call brief (5-8 minutes), with a specific and repeated content \u2014 asking the counsellor to confirm he \"did the right thing\" taking his medication and has not overdosed \u2014 followed by thanks and a planned, caller-initiated closure once reassured. This regularity has been stable, not escalating or degrading, across the full 6-week window.\n\nObserved change\nAll available data describes connected, substantive contact \u2014 the caller reaches a counsellor, engages meaningfully with the specific checking exchange, and ends the call in a planned way once reassured. There is no information here on attempted-but-unconnected contact (pre-call disconnections, abandoned queue attempts) in this period, so it is not known whether the connected calls described are the whole of his contact with the service or a subset of it. No change in frequency, duration, timing, or engagement is reported within the 6 weeks \u2014 the pattern has been steady since it began, not building or tapering.\n\nEngagement pattern\nEngagement is consistently substantive and consistently brief: the caller connects, asks a specific, narrow question, receives reassurance, thanks the counsellor, and ends the call himself. There is no reported disengagement, no abrupt endings, and no indication of counsellor-initiated closure. No suicidal ideation, self-harm, or distress content beyond the checking behaviour has been recorded in any call.\n\nPossible function \u2014 hypotheses only\n- Reassurance-seeking / checking behaviour tied to health anxiety or fear of medication error (e.g. accidental overdose), using the counsellor as an external verification source at a fixed point in his medication routine.\n- A ritualised coping strategy that has come to depend on the call itself (as opposed to the reassurance content) to complete a daily routine.\n- An indicator of an underlying anxiety or obsessive-compulsive pattern around medication safety that has not been formally assessed or treated elsewhere.\n- Use of the helpline as a substitute for, or bridge to, a check-in resource he does not otherwise have access to (e.g. no other person or service currently confirms this for him).\n\nThe caller has stated this explicit function to two separate counsellors, which is stronger evidence than an inferred hypothesis for the two questions of what he is doing and why he says he is doing it. It does not on its own establish the underlying clinical picture (e.g. whether this reflects health anxiety, OCD-type checking, or something else) \u2014 that remains unassessed and should not be assumed from his own account alone.\n\nWhat remains unknown\n- Whether any attempted-but-unconnected contact (pre-call disconnections, abandoned attempts) exists outside the connected calls described; only connected, substantive contact is accounted for here.\n- Whether this pattern is new in the caller's life (started with, or shortly after, a medication or dosage change) or a longstanding behaviour that has only recently become visible to the helpline.\n- Whether the caller has any other checking or reassurance-seeking behaviours outside these calls (e.g. with a GP, pharmacist, family member) that would indicate how isolated or generalised this pattern is.\n- Whether the underlying concern (fear of overdose) has ever been clinically assessed \u2014 e.g. medication regimen reviewed, dosage confirmed as safe by a prescriber \u2014 or whether the caller's day-to-day safety understanding rests solely on the counsellor's verbal reassurance each day.\n\nClinical significance\nThe pattern is well understood at the behavioural level: it is stable, low-risk in content, brief, and ends in a planned way, and its function has been directly and consistently stated by the caller himself across two counsellors rather than only inferred. Nothing in the material presented indicates escalation, deterioration, or content requiring a different response than what is currently occurring (brief reassurance, planned closure). The open question this analysis does not resolve is whether six weeks of daily helpline contact for a fixed, non-crisis reassurance need is being adequately addressed by the current response, or whether the underlying concern (fear of medication overdose) would be better and more sustainably managed through a source of reassurance/review outside the helpline (e.g. his prescriber or pharmacist). That is a question about adequacy of the wider care picture, not a sign that the pattern itself is misunderstood or mismanaged by the helpline in the moment.\n\nTherefore: Helpline\n\nThe pattern is understood \u2014 its frequency, timing, duration, content, and stated function are all consistent and corroborated across two counsellors \u2014 and the current response (brief reassurance, caller-initiated planned closure) remains proportionate to what is being asked for in each call. There is no immediate coordination or continuity gap: contact is not fragmenting across multiple counsellors without a shared picture, and no unexplained or worsening element requires TL/Safety Huddle or CRG involvement. This analysis does not prescribe follow-up action (e.g. referral to a GP or pharmacist for medication safety review) \u2014 that is outside this skill's scope \u2014 but notes it as a reasonable question for whoever holds his ongoing care to consider, separate from the pattern-review question answered here.\n"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

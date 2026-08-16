@@ -1,0 +1,22 @@
+PORF FORMULATION
+
+Risk Status
+Compared with people who contact this service with recurrent, chronic suicidal ideation and an established multi-year contact pattern, this caller's enduring vulnerability is consistent with that reference group: three years of weekly contact reporting persistent background suicidal thoughts. Against that same comparator, she has no recorded history of suicidal behaviour or escalation to plan/intent over the period of contact. There is no information here to place her against a general-population comparator, and none is needed for this point — status is being read against the population of long-term chronic-ideation contacts, not the general population.
+
+Risk State
+No material change from her own baseline is established tonight. She reports the ideation at the same intensity she describes as usual, no plan, no intent, a "decent day," and a contact reason (wanting to talk it through) matching her established pattern of weekly supportive calls. None of the within-person indicators the formulation tracks — intensity, specificity, intent, planning, access to means, hopelessness, agitation, isolation, engagement, willingness to accept help — are reported as different tonight. This absence of change is the basis for the conclusion below; it does not rest on the fact that she has never acted on the thoughts in three years, which is longitudinal context, not tonight's evidence.
+
+Resources
+The weekly supportive-call pattern itself is a confirmed, currently-in-use resource: she is accessing it tonight in the way she reliably does. Her self-report of a decent day is a same-night observation and should be weighted accordingly — it describes today, not a durable state. No information is available about other relational, internal, or environmental resources (e.g., other supports she can call on, coping strategies she uses between calls, any existing safety plan), so these are not established as available/unavailable rather than assumed absent.
+
+Foreseeable Change
+No specific foreseeable precipitant has been identified in the material provided (no upcoming loss, appointment, anniversary, or change in supervision/access mentioned). The only generically relevant marker would be any future contact in which she reports a departure from tonight's presentation — increased intensity, emerging plan or intent, or a shift in her usual contact pattern — which would warrant fresh Risk State assessment at that time. No speculative escalation is added here in the absence of an identified trigger.
+
+Key uncertainties
+Beyond tonight's presentation, no other current-context information (precipitants, health, substance use, relationship or housing changes) has been supplied, so a fuller contextual picture cannot be confirmed either way. The composition and usability of her broader resource network outside of Helpline contact is not established.
+
+Integrated formulation
+Because this caller has an established pattern of chronic background suicidal ideation and three years of weekly supportive contact with no recorded escalation to plan or intent, her enduring vulnerability is consistent with others who present this way to the service. Currently, she reports no change from her own usual state tonight — same intensity, no plan, no intent, and a contact reason matching her typical pattern — and this absence of change, not the historical absence of attempts, is the basis for judging Risk State unchanged. The clearest protective resource in view is her active, appropriate use of the service itself tonight, consistent with her established coping pattern; her report of a decent day is same-night information and carries limited independent weight. The main uncertainty is her broader resource picture outside of these calls, which is not established from what is available. No foreseeable precipitant has been identified tonight that would be expected to alter this. Chronicity and frequency of contact do not, on their own, indicate elevated risk, and nothing in tonight's Risk State assessment points to a departure from her longstanding pattern.
+
+Therefore
+This presentation supports continued Helpline management with the brief supportive contact consistent with her established pattern; no escalation is indicated on tonight's information, and none should be inferred from the chronicity of her ideation or the frequency of her contact alone — if a future contact establishes a genuine change in her Risk State, that would warrant fresh assessment against this baseline at that time.

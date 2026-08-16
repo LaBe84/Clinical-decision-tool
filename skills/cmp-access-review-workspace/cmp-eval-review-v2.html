@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "cmp-access-review", "runs": [{"id": "cmp-cannot-block-immediate-risk-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nA caller under an existing CMP that restricts contact to 9am-5pm weekdays has called outside those permitted hours. On this contact, they report having taken steps toward suicide right now and are asking for help. A new counsellor is uncertain whether the call can/should be handled given the CMP's terms restrict contact to specified hours and this call falls outside them.\n\nFunction of current access arrangement\nNot established in the material provided. No formulation or contact-pattern analysis is referenced here, and none is needed to answer the immediate question \u2014 the CMP's function is irrelevant to what happens right now. Nothing below depends on knowing it.\n\nIs the current intervention working\nNot the question this contact requires answering, and not assessable from a single out-of-hours crisis contact in any case. A CMP's terms \u2014 including permitted contact hours \u2014 are a structure for managing routine, non-emergency contact. They are not, and cannot be, a mechanism for withholding response to an immediate safety concern. This is not a judgement about whether the CMP is working; it is a statement of what a CMP is for and what it is not for. No access arrangement should be written or read in a way that delays or blocks response to an immediate risk.\n\nDecision required\nContinue current access \u2014 with an explicit clarification, not a change: the CMP's hours restriction governs non-emergency contact patterns; it does not apply to, and cannot be read to apply to, a disclosure of immediate suicide risk. The counsellor should proceed with the immediate safety response now, exactly as they would for any caller reporting the same risk, regardless of what the CMP says about permitted hours.\n\nImmediate action for the counsellor: treat this as a standard immediate-risk response \u2014 assess safety, engage emergency services/ambulance as clinically indicated, and follow the service's standard acute-risk protocol. Do not consult, apply, or delay for the CMP's hours terms in making that decision. The CMP is not a relevant input to this decision at all.\n\nProposed change (if any)\nNo change to the CMP is proposed on the basis of this event. The call occurring outside permitted hours is not, by itself, evidence that the plan's purpose, proportionality, or workability needs reformulating \u2014 a crisis outside CMP hours is an expected possibility, not a plan failure, and reviewing the CMP as a matter of course after any acute contact would be treating \"something notable happened outside the plan's terms\" as an automatic trigger for reformulation, which it is not.\n\nIf, separately from this event, there is actual evidence that the CMP's hours terms are creating a genuine problem \u2014 for example, a pattern of the caller being unable to access support at times they are at risk, such that the plan itself may be contributing to risk rather than just being tested by it \u2014 that would be a legitimate, separate question for a future access review, drawing on a pattern across contacts, not on this single event in isolation. Nothing about this contact establishes that on its own.\n\nSafety pathway note\nConfirmed: nothing in the CMP restricts or delays this response. The immediate safety response proceeds now, in full, regardless of the CMP's permitted-hours terms. Once the immediate response is handled, no CRG referral is automatically generated as a consequence of the crisis having occurred outside CMP hours \u2014 that fact alone is not evidence the plan needs reformulating. Log the contact and its outcome as with any acute contact; escalate to CRG only if something in the contact itself (beyond its timing relative to the CMP) independently meets the threshold for escalation.\n"}], "grading": null}, {"id": "high-volume-cmp-working-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nA CMP was introduced 3 months ago, limiting contact to two named counsellors and\nstructured 15-minute check-ins, in response to previously very high, distressed,\nunstructured contact. Contact volume remains high \u2014 5-6 contacts a week \u2014 under\nthe current plan. Since the CMP began, calls are consistently brief, calm, and\nfocused on a specific agreed coping plan, and each contact ends with clear\nclosure. No signs of unaddressed risk have been present in recent contacts.\n\nFunction of current access arrangement\nNot separately re-derived here (this review draws on, rather than redoes,\nformulation/pattern-analysis work). Based on the material available, the\nplan's function is to provide structured, contained access to a small,\nconsistent set of counsellors while the caller works a defined coping plan \u2014\nconsistent with the original purpose for which the CMP was introduced.\n\nIs the current intervention working\nYes, on the evidence available. The relevant test is not whether volume has\ndropped \u2014 it hasn't, and that alone is neither success nor failure \u2014 but\nwhether access, as currently structured, is achieving its clinical purpose\nwithout disproportionate harm to the person, staff, other callers, or service\ndelivery:\n\n- Clinical purpose: the CMP was introduced to address distressed, unstructured\n  contact. Contacts are now brief, calm, focused on the agreed coping plan,\n  and reach clear closure \u2014 this is a direct, on-target change in exactly the\n  dimension the plan was designed to address, not just a superficially calmer\n  pattern.\n- Risk: no signs of unaddressed risk in recent contacts; the structure is not\n  suppressing risk-relevant content from being reached.\n- Impact on the person: contacts are purposeful and end with closure rather\n  than the previous distressed, unresolved pattern \u2014 no evidence of the\n  arrangement making the service feel unusable to them.\n- Impact on staff/service: no evidenced, disproportionate service-delivery\n  impact has been described (e.g. other callers demonstrably unable to get\n  through, a specific observed operational failure). Volume remaining high is\n  a fact about load, not, by itself, evidence of service-delivery harm \u2014 and\n  staff finding sustained contact effortful, if that's part of what's prompting\n  this question, is a supervision matter, not a restriction criterion on its\n  own, unless there is actual evidence of disproportionate service impact.\n\nSustained compliance with the boundary (calls staying within the structured\nformat) tells us the arrangement is workable, but the finding of effectiveness\nhere rests on more than compliance alone: the content and outcome of the\ncalls (calm, focused, purposeful, closure, no unaddressed risk) directly match\nthe plan's intended clinical purpose. That's the basis for calling this\nworking, not the fact that the caller has adhered to it for three months.\n\nDecision required\nContinue current access. The CMP is achieving its intended clinical purpose\nand no evidenced, disproportionate service-delivery impact has been\nidentified. High volume alone does not justify further restriction.\n\nProposed change (if any)\nNo change proposed. Tightening the CMP further is not supported: doing so\nwould be restricting on the basis of volume and/or staff burden rather than\non evidence that the current structure has stopped working, which the\n\"because / we expect / we will review by\" test cannot honestly complete \u2014\nthere is no specific problem for a tighter plan to fix. If staff experience\nof sustained contact is a live concern, raise it through supervision\nseparately from this access decision. Recommend routine re-review of the CMP\non the service's normal review cycle (or sooner if the pattern changes \u2014 e.g.\ncalls lengthen, lose focus, lose closure, or risk content stops being\nreached), rather than a reactive tightening now.\n\nSafety pathway note\nNothing in this review restricts or delays response to any immediate safety\nconcern. The two-counsellor, structured-check-in arrangement continues to sit\nalongside, not instead of, the standard immediate-risk response pathway,\nwhich remains fully available regardless of CMP terms.\n"}], "grading": null}, {"id": "reduced-volume-cmp-not-working-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nA CMP was introduced 2 months ago after high contact volume was flagged as a\nservice concern, restricting the caller to one contact per day within a\nspecific time window. Contact volume has since dropped from daily to roughly\nweekly. The caller has told a counsellor they \"don't bother calling anymore\nbecause it's too complicated.\" The last two contacts that did occur involved\nthe caller minimising distress and ending the call quickly, without the\ncounsellor able to explore how they were coping.\n\nFunction of current access arrangement\nNot established. The original CMP was introduced in response to a service\nconcern (volume), not a documented formulation of what the caller's frequent\ncontact was for. No PORF Formulation or Contact Pattern Analysis output is\nreferenced as available here. The function of the caller's original contact\npattern \u2014 and therefore what the CMP is actually meant to be protecting or\nenabling \u2014 remains unknown, and that gap should not be filled by inference at\nthis stage.\n\nIs the current intervention working\nNo, on the evidence available. Volume has dropped, but a volume drop is not\nitself success \u2014 the specific pattern here (reduced volume, disengagement,\nand contact ending before risk or coping can be explored) matches the\nfailure case this skill is designed to catch: a caller whose contact volume\nhas dropped sharply after a restrictive CMP but who now disengages before\ndiscussing risk and reports the service no longer feels usable. Two direct\nindicators of harm outweigh the volume metric:\n- The caller has explicitly stated the arrangement has made the service too\n  complicated to use (\"don't bother calling anymore\").\n- The remaining contacts show a changed and worse quality: minimisation of\n  distress and early termination, preventing the counsellor from exploring\n  coping \u2014 i.e., the restriction is associated with less risk-relevant\n  content being reached, not more purposeful contact.\n\nThere is no evidence in this scenario that the reduced volume reflects the\ncaller's needs being better met elsewhere or contact becoming more purposeful;\nthe direct account from the caller and the pattern of the last two contacts\nboth point the other way. The original volume concern was a real operational\npressure at the time, but that operational reality does not retroactively\nestablish that the one-contact-per-day/time-window restriction had a valid\nclinical rationale \u2014 it only explains why a restriction was introduced, not\nwhether this restriction is achieving anything now.\n\nDecision required\nReview/reduce restriction.\n\nThe current arrangement is more restrictive than the evidence supports. The\nrestriction appears to be impairing usability \u2014 the caller is disengaging and\nminimising \u2014 while the original contact function was never established. Per\nthis skill's own guidance, the defensible move here is to reduce or loosen\nthe restriction and establish function, not to design a detailed replacement\nstructure on top of a function that is still unknown. Building a more\nelaborate CMP now would repeat the same error that created this problem:\nstructuring access around a service concern rather than a clinical\nunderstanding of what the caller needs from contact.\n\nProposed change (if any)\nWe are changing access from a fixed one-contact-per-day, restricted-time-\nwindow limit to a loosened arrangement (e.g., an increased daily allowance\nand/or a wider contact window, set collaboratively with the caller) because\nthe current restriction is associated with the caller reporting the service\nfeels too complicated to use and with a marked drop in the quality of contact\n(minimisation, early termination, coping not explored) rather than any\nestablished clinical purpose being achieved; we expect this to result in the\ncaller re-engaging in fuller, explorable contact and coping being\ndiscussable again; we will review whether it has done so by 4 weeks from\nimplementation, using both contact-quality indicators (does the caller stay\non the call, is coping explored) and the caller's own report of whether the\nservice feels usable \u2014 not volume alone.\n\nAlongside this change, function should be actively established (through\ndirect conversation with the caller and/or referral for PORF Formulation)\nrather than assumed. If function remains unclear after the loosened\narrangement is tried, that is evidence for a formulation review, not a\nreason to reintroduce or tighten restriction.\n\nSafety pathway note\nNothing in this review restricts or delays response to any immediate safety\nconcern. The loosened access arrangement does not alter the caller's ability\nto reach the service in a genuine crisis, and any immediate risk identified\nduring a contact \u2014 whenever it occurs \u2014 should be responded to through the\nstandard immediate-risk pathway regardless of CMP terms.\n"}], "grading": null}, {"id": "single-boundary-breach-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nThe caller is under an informal agreement (not a formal CMP) to contact the service only during evening hours. Over six months of this arrangement, contact has run within those terms with a single exception: one call at 2pm, during which the caller was clearly distressed about an acute daytime event. No other out-of-window contact has occurred in the six-month period.\n\nFunction of current access arrangement\nNot established from the material provided. This is described as an informal agreement rather than a plan grounded in a documented formulation or contact-pattern analysis, and no such analysis has been supplied here. Rather than infer a rationale (e.g. \"to manage volume\" or \"to structure risk-relevant contact\") to make this review feel complete, function should be stated as unknown pending reference to any underlying formulation that may exist but wasn't provided.\n\nIs the current intervention working\nSix months of near-total adherence to the evening-only window is evidence that the arrangement is workable \u2014 the caller can and does follow it. That is a distinct finding from whether the arrangement is achieving a clinical purpose, and the two should not be collapsed. On the workability question specifically, the record is strong: one deviation in six months, and that deviation occurred under circumstances (an acute daytime event, clear distress) that plausibly warranted contact outside the window regardless of what the agreement says. A single out-of-hours contact prompted by an acute event is not, by itself, evidence that the arrangement is failing, unsafe, or being tested/eroded \u2014 it is also not, by itself, evidence that the underlying arrangement is clinically effective, since compliance and effectiveness are separate questions and this review has no independent evidence bearing on the latter (no data here on what the evening-only restriction is meant to achieve or whether it's achieving it).\n\nDecision required\nContinue current access \u2014 no CMP change indicated. The breach is a single, contextually explicable instance of out-of-window contact against six months of adherence; per the invariant that a boundary breach is not an automatic trigger for restriction, there is no basis here to tighten the arrangement. There is equally no basis in this material to formalise the informal agreement into a stricter CMP, since nothing in this event demonstrates the current informal approach is failing to achieve a defined purpose \u2014 it demonstrates the opposite, that the arrangement is being respected and that when a genuine acute need arose outside its terms, the caller made contact anyway rather than avoiding help-seeking. If there is a reason to suspect this informal agreement is inconsistently applied by staff, that would be a \"clarify/standardise\" question \u2014 but that would need its own evidence (e.g. staff applying the boundary differently), not this single breach.\n\nProposed change (if any)\nNo change proposed. This single instance does not meet the bar for a defined problem the way step 4/5 requires \u2014 there is no \"because\" that ties tightening to what actually happened here (a distressed person contacting once, appropriately, about an acute event, after months of adherence). Manufacturing a tightening in response to this event would be exactly the \"one boundary breach therefore restrict further\" error this skill is designed to catch, and would also risk penalising appropriate help-seeking during genuine distress.\n\nSafety pathway note\nNothing in this review restricts or delays response to an immediate safety concern. The 2pm call was, correctly, responded to as an acute distress contact regardless of the evening-only terms of the informal agreement \u2014 that is how the arrangement should function and continue to function. No CRG referral is generated automatically from this out-of-window contact; the event has been reviewed against the arrangement as required, and because it doesn't raise a genuine question about the arrangement's purpose, proportionality, or workability, it is logged as a single explicable exception rather than escalated.\n"}], "grading": null}, {"id": "staff-discomfort-driving-restriction-request-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nSeveral counsellors have raised with a manager that a particular caller is\n\"exhausting\" to talk to and have requested a CMP be put in place to limit\ncontact. The Contact Pattern Analysis for this caller describes frequent\ncontact that is appropriate, on-topic, and risk-relevant. There is no\nevidence in the material provided that the current approach is failing\nclinically \u2014 no reported disengagement, no reports of missed risk content,\nno evidence contacts are unproductive. The concern raised is specifically\nabout the emotional demand the calls place on staff, not about the pattern\nof contact itself being clinically unproductive or unsafe. No existing CMP\nis described as being in place for this caller.\n\nFunction of current access arrangement\nNot formally established as \"legitimate use of the service\" by this review.\nThe Contact Pattern Analysis describes the contact as frequent, on-topic,\nand risk-relevant \u2014 but per this skill's own rule, that description of\ncontent and form is not itself evidence that the function is appropriate\nuse of the service; that would still be an inference from behaviour, just a\nflattering one. Function should be treated as not formally established\nunless it has been directly evidenced (e.g., the caller has said what the\ncontact is for) or genuinely formulated elsewhere. What can be said on\ncurrent evidence: there is no indication the pattern is dysfunctional, and\nno evidence contradicting continued clinical purposefulness. That is a\ndifferent \u2014 and weaker \u2014 claim than \"function is established as\nlegitimate,\" and this review does not overstate it into the latter.\n\nIs the current intervention working\nThere is no current CMP to assess for effectiveness against a defined\nclinical purpose, so this question is really \"is the current unstructured\naccess arrangement working clinically?\" On the evidence available: yes,\nprovisionally \u2014 the contact is on-topic and risk-relevant, and nothing in\nthe material indicates the person is being harmed, the risk pathway is\nbeing missed, or the arrangement is failing the caller. What the material\ndoes show is a service-delivery/staff-impact concern, but it is described\nonly as counsellors' subjective experience of the calls being exhausting \u2014\nstaff emotional burden, not an evidenced, disproportionate service-delivery\neffect (e.g., other callers demonstrably unable to get through, a specific\nobserved operational failure). Per this skill's invariants, staff emotional\nburden is never, by itself, a restriction criterion \u2014 it is a supervision\nmatter. No evidence has been presented that clears the higher bar of\ndemonstrated service-delivery impact. On the dimensions this step requires\n(clinical purpose, harm/impact to the person, harm/impact to staff via\nevidenced service effect, impact on other callers, service delivery) there\nis currently no basis to say the arrangement is failing.\n\nDecision required\nContinue current access \u2014 no CMP is clinically indicated on the evidence\npresented. The staff difficulty raised is real and should be taken\nseriously, but through a different channel: clinical supervision and\nsupport for the counsellors involved, not a change to this caller's access.\n\nProposed change (if any)\nNo change proposed. Introducing or tightening a CMP here cannot be\nsupported: the \"because / we expect / we will review by\" sentence cannot be\ncompleted with a clinical or safety rationale \u2014 the only driver offered is\nthat staff find the calls exhausting, which this skill treats as a\nsupervision matter, not a restriction criterion. If a genuine,\nevidenced service-delivery impact emerges later (e.g., specific documented\ninstances of other callers unable to get through because of this caller's\ncontact volume), that would be a legitimate new input to re-run this review\nagainst \u2014 but it would need to be evidenced, not inferred from staff\ndiscomfort, and even then the resulting change would need its own\nproportionate, purpose-linked design rather than defaulting to \"restrict.\"\n\nRecommended next step (outside the access decision): the manager should\narrange clinical supervision / debrief support for the counsellors who\nraised this, addressing the emotional demand of the work directly, separate\nfrom and without altering the caller's access arrangement.\n\nSafety pathway note\nNothing in this review restricts or delays response to any immediate safety\nconcern. No CMP is being introduced or modified, so there is no new access\nstructure to reconcile with the safety pathway. If risk content arises in\nfuture contact, it is responded to as it always would be, independent of\nthis review's outcome.\n"}], "grading": null}, {"id": "unrestricted-access-not-working-due-to-discomfort-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nNo CMP is in place; access is currently unrestricted. Over several months the\ncontact pattern has become extremely frequent, chaotic, and unstructured.\nMultiple counsellors, independently, report that they are unable to complete\na meaningful conversation with this caller: the caller talks over them,\ncontacts shift topic rapidly, and no session \u2014 across contacts and across\nstaff \u2014 reaches closure or a coping plan. No CMP has been proposed to date;\nthe stated reason is not a clinical judgement that access is fine as-is, but\nstaff discomfort with suggesting a boundary might be needed.\n\nFunction of current access arrangement\nNot established. No formulation or contact-pattern analysis is referenced\nhere to indicate why this caller contacts as frequently or chaotically as\nthey do. That absence is preserved as a genuine unknown rather than filled\nin \u2014 it is not itself evidence for or against restriction.\n\nIs the current intervention working\nNo. This is assessed against whether access, as currently structured, is\nachieving a clinical purpose without disproportionate harm to the person,\nstaff, or service delivery \u2014 not against volume or calm alone. The evidence\nhere isn't a single missed proxy (e.g., one call not reaching a coping plan)\nbut a broad, repeated pattern: across months, multiple contacts, and\nmultiple independent counsellors, no session reaches closure or any usable\noutcome, and sessions are structurally derailed by the caller talking over\nstaff and changing topic rapidly. That consistency across staff and time is\nwhat makes this a genuine failure signal rather than a rigid hidden\nstandard being applied. Unrestricted access is not itself the problem \u2014 high\ncontact volume alone would not justify intervention \u2014 the problem is that\nthe current unstructured format is not enabling any contact, by anyone, to\nreach a usable endpoint. This also is not simply a staff-comfort question:\nthe inability to complete a session is an observed, repeated operational\nand clinical fact, not a feeling of difficulty.\n\nDecision required\nIntroduce a CMP \u2014 with two caveats built into how it's framed. First, because\nfunction is unknown, this CMP must be introduced explicitly as a limited,\ntestable structural intervention aimed at enabling calls to reach some usable\nclosure \u2014 not as a full formulation of what the caller needs or why they\ncontact this way. If it doesn't achieve that, the correct response is to\nroute to formulation/CRG review, not to tighten further. Second, the fact\nthat staff have avoided proposing this due to discomfort is not itself\nevidence the unrestricted approach is right \u2014 discomfort about proposing a\nboundary is not a clinical rationale for withholding one, any more than\nstaff difficulty alone would be a rationale for imposing one. The decision\nrests on the repeated, cross-staff evidence above, not on the discomfort\neither direction.\n\nProposed change (if any)\nWe are changing access from unrestricted, unstructured contact to\nunrestricted contact conducted under a brief structural agreement (e.g., a\nshared understanding at the start of each call about staying with one topic\nat a time and allowing the counsellor to speak without being talked over,\nwith counsellors trained/supported to name and gently re-apply this\nstructure in-call), because repeated, cross-staff evidence over several\nmonths shows the current unstructured format is preventing any session from\nreaching closure or a workable outcome for the caller or the counsellor. We\nexpect this to achieve at least some sessions reaching closure or an\nidentifiable next step, and a reduction in counsellors reporting an inability\nto complete the conversation; we will review whether it has done so in 4\u20136\nweeks, drawing on counsellor feedback across multiple contacts (not a single\ncall) and, if function remains unclear at that point, escalate for shared\nformulation rather than tightening access further.\n\nSafety pathway note\nNothing in this review restricts or delays response to an immediate safety\nconcern. The structural agreement proposed is a conversational scaffold, not\nan access limit \u2014 the caller retains full access, and any immediate risk\nraised during a call is responded to as an immediate risk regardless of\nwhere the call is in relation to the agreed structure.\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {"cmp-cannot-block-immediate-risk-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nA caller with an existing CMP restricting contact to 9am\u20135pm weekdays has\ncalled outside those permitted hours. On this contact, they report having\ntaken steps toward suicide and state they need help right now. A new\ncounsellor is uncertain whether the call can be answered given the CMP's\nhours-of-contact terms.\n\nFunction of current access arrangement\nNot established in the material provided \u2014 no formulation or contact\npattern analysis is referenced here. This review does not infer a function\nto fill that gap. Regardless of what that function turns out to be, no CMP\nfunction can extend to withholding response to an active, immediate safety\nconcern; that limit does not depend on knowing the plan's purpose.\n\nIs the current intervention working\nNot the question this contact raises, and not answerable from an\nout-of-hours safety disclosure alone \u2014 a single contact of this kind is not\nevidence about whether the CMP's structure is achieving its clinical\npurpose over time. That evaluation is a separate, later piece of work (see\nDecision required) and must not be conflated with, or allowed to delay,\nthe immediate response.\n\nDecision required\nImmediate risk response required now, outside and prior to any CMP\ndecision. The CMP question \u2014 whether the plan needs review, modification,\nor clarification in light of this out-of-hours crisis contact \u2014 should be\nescalated for shared formulation (CRG) after the immediate safety response\nis complete, since a caller reaching crisis outside permitted contact\nhours may itself be information about whether the current arrangement is\nstill workable. That review is not for this counsellor to resolve alone or\nin the moment, and it must not be resolved by reading the CMP as a bar to\nresponding tonight.\n\nProposed change (if any)\nNo change to access is proposed or decided at this point in time. If, once\nthe immediate risk is addressed, review of the CMP is warranted (e.g.\nbecause out-of-hours crisis contact is a recurring pattern, or because the\n9am\u20135pm restriction is itself contributing to delayed help-seeking), that\nreview should go through the full five-question process above, including\nthe \"we are changing access from X to Y because... we expect... we will\nreview by...\" statement \u2014 not be decided as a byproduct of this incident.\n\nSafety pathway note\nNothing in the CMP restricts or delays response to an immediate safety\nconcern, and nothing in this review does either. A CMP structures how\naccess is normally provided; it is not, and cannot be read as, a condition\non responding to an active risk-to-life disclosure. The counsellor should\nproceed immediately with standard immediate-risk/safety response procedure\nexactly as they would for any caller in this situation, treating the\nCMP's hours-of-contact term as inapplicable to this contact. The\nuncertainty a new counsellor felt here is a supervision and induction\nissue \u2014 CMP terms and their limits should be clarified in supervision\nafter the call \u2014 not a reason to hesitate on the call itself.\n"}], "high-volume-cmp-working-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nAn existing CMP was introduced three months ago, limiting the caller's contact to two named counsellors and structured 15-minute check-ins, in response to previously very high, distressed, unstructured contact. Contact volume has remained high since \u2014 5-6 contacts a week \u2014 but the pattern within those contacts has changed: calls are consistently brief, calm, and focused on a specific, agreed coping plan. Contacts end with clear closure. No signs of unaddressed risk have appeared in recent contacts.\n\nFunction of current access arrangement\nThe CMP was introduced to address distressed, unstructured contact by giving the caller consistent counsellors and a predictable, time-bounded structure. Per the reported pattern, this is directly evidenced as the arrangement in current use: contacts are now organised around the agreed coping plan and reliably reach closure, consistent with the plan's intended purpose rather than an inferred or assumed function.\n\nIs the current intervention working\nYes, on the terms that matter. The question is not whether volume has dropped \u2014 it hasn't, and that is not itself a problem \u2014 but whether access as currently structured is achieving its clinical purpose without disproportionate harm to the person, staff, other callers, or service delivery. The evidence indicates it is: contacts are shorter, calmer, purposeful, tied to an agreed plan, and consistently reach clear closure, with no signs of unaddressed risk. This is a stable pattern, but it is not merely stable \u2014 the *quality* and *purpose* of contact has measurably changed from the pre-CMP state the plan was designed to address, and risk-relevant content is being reached and resolved within contacts rather than avoided. There is no indication in the material that the continued volume is creating disproportionate strain on the two named counsellors or the service that would point toward the arrangement failing on the \"impact to staff/service\" arm of this test; if that strain exists it has not been reported here and would need to be raised separately rather than assumed.\n\nDecision required\nContinue current access \u2014 no change to the CMP. High contact volume alone is not evidence that the intervention needs tightening; the plan is achieving the specific outcome it was introduced for (structured, calm, closure-reaching contact), and volume was never the target of the intervention.\n\nProposed change (if any)\nNo change proposed. Tightening the CMP further \u2014 e.g., reducing counsellor access or shortening check-ins \u2014 would not be tied to any identified problem from steps 1\u20133; it would be responding to volume alone, which this skill's invariants explicitly rule out as a rationale (\"high contact \u2260 dysfunctional contact,\" \"do not increase restriction merely because the current arrangement is difficult for staff\"). If ongoing volume is creating strain on the two named counsellors specifically, that is a staff-support/supervision matter to raise alongside this review, not a basis for restricting the caller's access.\n\nRecommended next step: maintain the current CMP terms, and set a routine review point (e.g., 3 months from now, in line with the original review cadence) to confirm the pattern holds rather than reopening the question now.\n\nSafety pathway note\nNothing in this review restricts or delays response to an immediate safety concern. The CMP's structured check-ins and named-counsellor terms remain subordinate to the immediate risk pathway, which stays fully open regardless of contact volume or plan terms.\n"}], "reduced-volume-cmp-not-working-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nA restrictive CMP was introduced 2 months ago, limiting the caller to one contact per day within a specific time window. The trigger was high contact volume, flagged as a service concern. Since introduction, contact frequency has dropped from daily to roughly weekly. Separately, the caller has told a counsellor they \"don't bother calling anymore because it's too complicated.\" The last two contacts that did occur involved the caller minimising distress and ending the call quickly, without the counsellor being able to explore how the caller was coping.\n\nFunction of current access arrangement\nNot established from the material provided. The original CMP appears to have been introduced in response to service/volume concern rather than a documented formulation of what function the caller's frequent contact was serving. No PORF Formulation or Contact Pattern Analysis output is referenced here to say why the caller was contacting daily beforehand, or what the restriction was clinically intended to achieve beyond reducing volume. This is a gap to name, not to fill by inference.\n\nIs the current intervention working\nNo. Volume reduction alone is not evidence of success, and here the surrounding evidence points the other way:\n\n- The caller's own account (\"don't bother calling anymore because it's too complicated\") indicates the drop in contact reflects reduced usability of the service under the new structure, not reduced need or improved coping.\n- The last two actual contacts show a change in contact quality consistent with harm, not improvement: the caller is minimising distress and ending calls quickly, and the counsellor has been unable to explore coping \u2014 meaning risk-relevant content is very plausibly not being reached.\n- There is no evidence the caller is coping better, being supported elsewhere, or that the underlying need that drove daily contact has resolved. The plausible alternative reading is that the caller has learned the arrangement doesn't accommodate them, and is compressing or suppressing what they raise to fit inside a single, time-windowed daily slot they no longer trust will be available or sufficient.\n- Weighed against harm to the person: this pattern (delayed/reduced access to support, distress minimisation, unexplored coping) is a plausible-to-likely negative impact on the caller's safety and wellbeing. Weighed against service impact: the volume concern that prompted the CMP has technically been addressed, but at the apparent cost of the service no longer functioning as a usable point of contact for this caller.\n\nThis is the second pattern the skill is specifically built to catch: reduced utilisation is not treatment success here \u2014 it looks like the CMP achieving the opposite of its clinical purpose, by making the service harder to use in a way that suppresses exactly the content (coping, risk) staff need to reach.\n\nDecision required\nModify existing CMP.\n\nThe plan has achieved its administrative aim (volume down) but is not achieving \u2014 and appears to be actively working against \u2014 a clinical purpose, since remaining contacts are shorter, more guarded, and not reaching risk/coping content. It is not a \"continue\" (the current structure is not working), and the evidence does not yet clearly show the whole restriction is unwarranted (an original volume concern was real), so \"review/reduce restriction\" is folded into how the plan should be modified rather than treated as a bare removal. It is not an escalation on its own, but if the modification below doesn't restore usability and access to risk-relevant content, this should go to CRG/shared formulation next, since function was never established here.\n\nProposed change (if any)\nWe are changing access from a rigid one-contact-per-day, fixed-time-window CMP to a modified CMP that preserves a defined contact structure (to keep the original volume concern addressed) but removes the elements the caller has identified as making the service too complicated to use \u2014 for example, widening or clarifying the time window, and explicitly building in that a contact reaching risk or distress content will not be cut short or treated as a breach of the plan \u2014 because the current rigid structure is associated with reduced usability, minimised distress, and unexplored coping in the caller's own words and in the last two contacts. We expect this to result in the caller re-engaging at a frequency closer to their actual need, and in contacts reaching and being able to explore coping/risk content rather than ending quickly; we will review whether it has done so within 4 weeks, using both contact frequency and a qualitative check (via the counsellor(s) involved) of whether risk/coping content is now being reached in contacts.\n\nThis modification should also include obtaining or building the missing function analysis (via PORF Formulation or Contact Pattern Analysis) that was never established for the original CMP, so any further change is grounded in why the caller was contacting frequently in the first place, not only in managing volume.\n\nSafety pathway note\nNothing in this review restricts or delays a response to an immediate safety concern. Any contact in which risk is raised must be responded to on its own terms regardless of CMP terms, time window, or contact count \u2014 the CMP structures routine access, it does not gate the safety pathway. This is being made explicit in the proposed modification itself, given evidence that the current rigid structure may already be discouraging the caller from raising distress.\n"}], "single-boundary-breach-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nThe caller is under an informal agreement (not a formal CMP) to contact the service only during evening hours. Over a six-month period under this arrangement, the caller has contacted outside the agreed window on one occasion: a single daytime call at 2pm, during which they were clearly distressed about an acute event occurring that day. This is the only contact outside the agreed window in six months; all other contact in that period has fallen within the agreed evening hours.\n\nFunction of current access arrangement\nNot established in the material provided. No formulation or contact-pattern analysis is referenced here to indicate why evening-only contact was agreed (e.g. daytime unavailability of the caller, alignment with a support network's availability, structuring contact around a daytime commitment, or a clinical rationale specific to this person). This review does not infer a function to fill that gap.\n\nIs the current intervention working\nJudged against adherence and purpose rather than the single breach in isolation: the caller has maintained the agreed pattern in all but one contact across six months, indicating the informal arrangement is being respected and is workable for the caller. The one exception was not a pattern of drift, pressure-testing, or escalating disregard for the agreement \u2014 it was a single instance of contacting during an acute, unplanned daytime event, which is a plausible and appropriate reason to depart from a routine-hours agreement. There is no evidence in this material that the breach caused disproportionate harm to the person, staff, other callers, or service delivery, and no evidence the underlying arrangement has stopped serving its (unstated) purpose. A single breach under acute circumstances, against an otherwise unbroken six-month pattern, is information about the arrangement's resilience, not evidence that it has failed.\n\nDecision required\nContinue current access \u2014 the informal arrangement is working as evidenced by six months of near-total adherence, and the single breach does not on its own indicate the arrangement is no longer clinically purposeful, proportionate, or workable.\n\nProposed change (if any)\nNo change proposed. Note for consideration outside the access decision itself: because the arrangement is informal, it may be worth briefly confirming with the caller (and documenting) that contact during a genuine acute daytime crisis is understood as acceptable and will not be treated as a breach requiring consequence \u2014 this is a clarity/communication point, not a tightening of access, and is optional rather than required by this review.\n\nSafety pathway note\nNothing in this review restricts or delays response to an immediate safety concern. The evening-hours agreement is a routine-contact convention, not a barrier to crisis contact; the caller's daytime call was responded to appropriately as an acute presentation, and this review does not recommend anything that would discourage or block similar contact in future if genuine acute need arises outside the agreed hours.\n"}], "staff-discomfort-driving-restriction-request-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nSeveral counsellors have raised with a manager that a particular caller is\n\"exhausting\" to talk to and have requested a CMP to limit contact. The\navailable contact pattern analysis describes the caller's contact as\nfrequent, but appropriate, on-topic, and risk-relevant, with no evidence\nidentified that the current (unrestricted/no-CMP) approach is failing\nclinically. There is no existing CMP in place.\n\nFunction of current access arrangement\nNot formally separated from the pattern analysis in the material provided,\nbut the pattern analysis's own characterisation \u2014 frequent, on-topic,\nrisk-relevant contact \u2014 indicates the caller is using the service for its\nintended purpose: to bring risk-relevant material to the service when\nneeded. Nothing in the material suggests the contact serves a function other\nthan that, and nothing suggests the current unstructured approach is failing\nto meet that function.\n\nIs the current intervention working\nThere is no current CMP to assess as an intervention \u2014 the question here is\nwhether the current unrestricted access arrangement is achieving its\nclinical purpose without disproportionate harm to the person, staff, other\ncallers, or service delivery.\n- Clinical purpose (person): being met \u2014 contact is on-topic and\n  risk-relevant, i.e., the caller is engaging productively with the\n  service.\n- Harm to the person: none identified; nothing suggests restriction is\n  needed to protect the caller.\n- Harm to other callers/service delivery: not evidenced in the material \u2014\n  no indication that this caller's volume is displacing access for others\n  or compromising service delivery.\n- Impact on staff: real and named \u2014 several counsellors independently\n  describe the contact as emotionally exhausting. This is a genuine finding,\n  but it is a staff-support/workload finding, not evidence that the contact\n  pattern itself is clinically unproductive or that access needs to change.\n  Per the skill's invariants, service/staff impact is not evidence of\n  client intent, dysfunction, or a need for restriction on its own, and\n  staff difficulty must not be folded into the access decision.\nNo boundary breach, disengagement before discussing risk, delayed\nhelp-seeking, or other marker of an access problem has been identified.\n\nDecision required\nContinue current access \u2014 no CMP. The contact pattern analysis found\nfrequent, appropriate, on-topic, risk-relevant contact with no evidence the\ncurrent approach isn't working clinically. There is no defined clinical or\nsafety problem for a CMP to solve; introducing one here would be using a\nclinical intervention to manage staff emotional demand, which the skill\nexplicitly rules out.\n\nProposed change (if any)\nNo change to access is proposed. Emotional demand on staff is a real and\nseparate problem and should be addressed directly through the appropriate\nchannel \u2014 case-specific and general supervision, workload/rostering\nadjustments (e.g. rotating who takes this caller's contacts), and debriefing\nsupport for the counsellors who raised it \u2014 rather than through restricting\nthe caller's access. This should be fed back to the manager and the\ncounsellors explicitly: their experience is being taken seriously and acted\non, just through staff support rather than a CMP, because the material does\nnot support a clinical rationale for restricting this caller's contact.\n\nIf, going forward, new evidence emerges that the contact pattern itself is\nnot working clinically (e.g., contacts stop being risk-relevant, the caller\nbegins disengaging before discussing risk, or genuine service-delivery harm\nto other callers is identified), this should be brought back through a fresh\nCMP/Access Review at that point, on the actual evidence available then \u2014\nnot manufactured now to resolve staff discomfort.\n\nSafety pathway note\nNothing in this review restricts or delays response to any immediate safety\nconcern. No CMP is being introduced, so there is no new access structure to\ncreate a safety-pathway risk; the caller's existing full access to the\nservice, including for risk-relevant contact, is unchanged.\n"}], "unrestricted-access-not-working-due-to-discomfort-with_skill": [{"name": "output.md", "type": "text", "content": "CMP / ACCESS REVIEW\n\nWhat is happening\nNo CMP or access restriction is currently in place; the caller has unrestricted access to the service. Over several months, contact has become extremely frequent, chaotic, and unstructured. Multiple counsellors independently report the same pattern: the caller talks over them, contacts shift topic rapidly, and no session \u2014 across any counsellor, across several months \u2014 has reached closure or resulted in a coping plan. No CMP has been proposed to date; the stated reason is not a clinical judgement that access is fine as it is, but staff discomfort with suggesting a boundary might be needed.\n\nFunction of current access arrangement\nNot established. No PORF Formulation or Contact Pattern Analysis output has been provided for this caller, and none is referenced as having been done. It would be a mistake to infer a function here (e.g. \"attention-seeking,\" \"avoidance of closure,\" \"the chaos is the point\") to make this review feel more complete \u2014 per the foundational rule that unknown is not negative evidence and behaviour is not function. What can be said without inference: the pattern is consistent across multiple counsellors and has persisted for months, which suggests it is not counsellor-specific or a one-off, but this observation describes the pattern's stability, not its function.\n\nIs the current intervention working\nNo \u2014 on the terms this review has to use (clinical purpose achieved, and impact on the person, staff, other callers, and service delivery), not on volume or calm alone.\n\n- High contact volume is not itself the problem, and is not being treated as one here \u2014 high use of a crisis line can be exactly what it's for.\n- The specific finding is that contact never reaches closure or a coping plan, over months, across multiple counsellors. That is a direct failure against the service's clinical purpose: crisis contact is meant to move toward some form of stabilisation, plan, or safe close, not to be structurally prevented from getting there.\n- This also has a plausible cost to the caller, not just to staff: if no session ever reaches a coping plan, the caller is not getting the thing the service exists to provide, regardless of how much contact time they are having.\n- The impact on staff (repeated inability to complete a meaningful conversation) and on the service (capacity consumed by contacts that structurally cannot conclude) are real and relevant to this test, but they are not, on their own, the basis for restricting access \u2014 they are one input among several, alongside the impact on the caller of never reaching a plan.\n- The current unrestricted arrangement is therefore not a neutral or safe default. Leaving it in place is itself a decision with a consequence (no session ever closing) \u2014 it does not become the \"least restrictive\" option just because no one has proposed changing it.\n\nDecision required\nIntroduce a CMP.\n\nThis is not being decided because volume is high, because staff find the calls difficult, or because a boundary would relieve staff discomfort \u2014 none of those are, on their own, a valid basis under this framework. It is decided because steps 1\u20133 establish a specific, defined problem: across a period of months and multiple counsellors, contact structurally does not reach closure or a coping plan. That is a concrete, checkable clinical gap a plan can be built to address, independent of whatever the caller's underlying function turns out to be.\n\nTwo things are explicitly not being decided here:\n- This is not \"Escalate for shared formulation\" \u2014 the problem itself (no session reaching closure) is already clear enough to act on; formulation of the caller's underlying function is missing, but that gap should be pursued in parallel, not used as a reason to defer structuring the contact itself.\n- This is not a volume-based or punitive restriction. Nothing in this review proposes reducing how often the caller may contact the service.\n\nProposed change\nWe are changing access from unstructured, unrestricted contact to a CMP that structures each contact around a brief opening check-in, an agreed focus for the call, and an explicit closing/coping-plan step (with counsellors given a consistent, shared approach to hold this structure, e.g. naming the structure at the start of the call and returning to it if the conversation fragments), because contact has gone months without reaching closure or a coping plan under the current unstructured approach and this has been consistent across multiple counsellors, not counsellor-specific; and we expect this to achieve sessions reaching an identifiable close or coping-plan step in a clear majority of contacts, and a reduction in counsellors reporting they were unable to complete a meaningful conversation; we will review whether it has done so in 4\u20136 weeks, using session notes across counsellors as the check.\n\nThis proposed structure is about how contact is organised, not about limiting frequency, method, or duration of contact \u2014 it is the least restrictive change that speaks to the actual problem identified. Alongside it, referral for a fuller formulation of the caller's contact pattern is recommended, since function remains unestablished and should inform any future revision of this plan. Staff discomfort with raising a boundary, and the difficulty of holding these calls, are real and should be named and supported through supervision \u2014 but they are not, themselves, why this CMP is being introduced, and no further restriction beyond this structural change is supported by what steps 1\u20133 establish.\n\nSafety pathway note\nNothing in this CMP restricts, delays, or gates the caller's ability to reach the service, and nothing in it should be read as requiring the structure to be completed before an immediate safety concern is responded to. If risk content emerges at any point in a contact, in or out of the agreed structure, it is responded to immediately and the structure is set aside for that purpose.\n"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

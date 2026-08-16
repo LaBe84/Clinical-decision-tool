@@ -1,0 +1,47 @@
+{
+  "skill_name": "contact-pattern-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "name": "apparent-escalation-unchanged-baseline",
+      "prompt": "Caller has contacted Lifeline 4-5 times a week for the past 8 months, always in the evening, always 15-25 minute supportive calls about ongoing loneliness and low mood, always ending with the caller thanking the counsellor and agreeing a plan for the night. This week she called on 5 consecutive evenings instead of her usual spread across the week, same duration, same content, same calm ending each time. A colleague has flagged this as 'escalating contact' and wants to know if it needs review.",
+      "expected_output": "Analysis that recognises this is within her established range (frequency clustering this week, not a new pattern) rather than escalation, notes duration/content/engagement/endings are all consistent with baseline, and concludes Helpline - pattern understood, current response proportionate. Should not treat the raw frequency number in isolation as evidence of escalation.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "hidden-pre-call-disconnections",
+      "prompt": "System logs show a caller made 70 contact attempts to Lifeline over the past 10 days. Of these, 6 connected to a counsellor and are documented as calm, coherent supportive conversations lasting 10-20 minutes each with clear closure. The remaining 64 attempts terminated during the automated pre-call message before reaching a counsellor - there is no record of what, if anything, was said or intended during these. No one has reviewed the 64 disconnected attempts as a group before now.",
+      "expected_output": "Analysis that explicitly refuses to characterise 'the pattern' using only the 6 connected calls, flags the 64 pre-call-terminated attempts as a major data gap with unknown content/intent, states that the visible connected-call picture may be misleadingly reassuring, and concludes at minimum TL/Safety Huddle (likely CRG given the scale and total absence of information on the disconnected attempts) rather than Helpline based on the 6 calls looking fine.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "declining-volume-disengagement-not-improvement",
+      "prompt": "Caller used to contact Lifeline 3-4 times a week for several months, consistently engaging well and using support to manage chronic distress. Over the last 3 weeks, contact has dropped to once every 10 days, and the last two calls were shorter than usual and ended with the caller saying 'never mind, it doesn't matter' and hanging up before the counsellor could explore further. No other information is available about what's changed for this person. A manager wants to know if this declining volume means things are improving.",
+      "expected_output": "Analysis that explicitly rejects the 'declining volume = improvement' inference, notes the change in engagement quality (shorter calls, abrupt/dismissive endings) as more informative than the raw frequency drop, flags this combination as a possible sign of disengagement or reduced trust rather than resolution, and does not conclude Helpline/no action purely because volume has gone down.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "isolated-dramatic-spike",
+      "prompt": "Caller with no prior contact history phoned Lifeline once, a single call lasting 45 minutes, highly distressed, discussing a specific acute crisis (job loss and eviction notice same day). Call ended with caller calmer, having identified concrete next steps and agreeing to call back if needed. No further contact in the two weeks since. Someone wants to know what this pattern tells us and whether it should be flagged.",
+      "expected_output": "Analysis that correctly identifies this as a single isolated contact with no established baseline to compare against (not a 'pattern' in the longitudinal sense), avoids treating one dramatic call as evidence of an ongoing pattern needing escalation, notes that absence of further contact is not itself evidence of either resolution or deterioration, and lands on a conclusion proportionate to a single well-resolved contact (Helpline) while being honest that there isn't a pattern here yet to analyse.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "reassurance-seeking-function-supported",
+      "prompt": "Caller has contacted Lifeline daily at almost exactly the same time (just after his usual medication dose) for 6 weeks, each call is brief (5-8 minutes), and in each call he explicitly asks the counsellor to confirm he 'did the right thing' taking his medication and hasn't overdosed, then thanks them and ends the call once reassured. He has explicitly told two different counsellors this is what he's doing and why. No suicidal ideation, self-harm, or distress content beyond this specific checking behaviour has been recorded in any call.",
+      "expected_output": "Analysis that treats reassurance-seeking specifically about medication safety as a supported function here (not just a hypothesis) because the caller has directly and consistently stated it across multiple contacts - this is one of the few cases where function CAN legitimately be inferred because there's direct evidence, not just behavioural pattern. Should still flag what remains unknown (e.g. why the checking need developed, whether this reflects broader anxiety) and reach a considered Therefore rather than automatically escalating just because it's daily contact.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "function-cannot-be-inferred",
+      "prompt": "Caller has made contact 8 times in the past week, at irregular and unpredictable times (some overnight, some midday), call durations vary wildly (2 minutes to 40 minutes), sometimes distressed and disclosing conflict at home, sometimes calm and talking about unrelated topics, sometimes silent for long stretches before hanging up. Different counsellors each time, no consistent theme, no stated reason for contacting. No prior history with the service before this week.",
+      "expected_output": "Analysis that explicitly refuses to settle on a function - the irregularity, variability in content/duration/affect, and lack of any stated reason mean multiple hypotheses remain equally plausible and none is supported over the others. Should resist the pull to pick the most clinically satisfying explanation, name this as new/unexplained pattern with high magnitude and short persistence (one week), and given the volume and total absence of a working explanation, likely conclude CRG or at minimum TL/Safety Huddle rather than Helpline.",
+      "files": []
+    }
+  ]
+}

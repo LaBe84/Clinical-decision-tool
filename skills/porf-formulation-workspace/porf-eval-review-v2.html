@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "porf-formulation", "runs": [{"id": "acute-intent-access-to-means-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nNo prior contact with this service and no other history is available (no clinical records, collateral information, or self-reported psychiatric/self-harm history). This means Risk Status cannot be established against any named reference population \u2014 general population, service-contact population, or a clinically defined group \u2014 because there is no information about enduring vulnerability factors (previous suicidal behaviour, psychiatric history, chronic adversity, or established protective patterns) to place against a comparator. Risk Status should be recorded as not established from available information, rather than assumed low because nothing adverse is recorded, or assumed high because the presentation is acute.\n\nRisk State\nThere is no known baseline for this person, so a within-person comparison \u2014 today against his own established pattern \u2014 cannot be performed. What can be reported is the acute presentation itself, described on its own terms rather than as a \"change\" from an unknown starting point: a precipitating relationship rupture two weeks ago, a further acute loss (contact with his children) within the past two days, heavy alcohol use tonight, expressed hopelessness (\"I don't see the point anymore\"), and access to a specific, verified means (prescribed sleeping tablets, physically present). When asked directly whether he plans to take the tablets tonight, he went quiet. This silence is a directly observed absence of a verbal response, not itself evidence of intent or of its absence \u2014 it cannot be read as concealment of a plan, nor as reassurance that no plan exists. Current intent cannot be established either way from the information available. Intoxication is relevant here not as evidence of intent but because it plausibly reduces capacity to delay acting on distress, regardless of what his intent is.\n\nResources\nNo relational, service, or environmental resources have been confirmed as available and usable. This is not the same claim as resources being unavailable \u2014 nothing in the contact so far indicates he has no one to call or nowhere to turn; it has simply not yet been established. He is in current contact with this service, which is itself a resource being used right now. No information is available about supportive relationships, treatment engagement, or prior help-seeking, and no safety plan or environmental containment (e.g., restricting his own access to the tablets) has been discussed or established at this point in the contact.\n\nForeseeable Change\nContinued or increasing alcohol intake tonight is a plausible near-term development that would likely further reduce his capacity to delay acting, independent of any change in underlying intent. Continued silence or disengagement from the call would represent a loss of visibility rather than evidence of deterioration in itself, but it would remove the service's only current source of information and should prompt renewed direct enquiry, not an inference that risk has worsened. Confirmation, from him, of a plan or timeframe for using the tablets would be a material and directly risk-relevant change. Renewed contact with his wife or children, or further developments in the custody dispute, could plausibly move the presentation in either direction and are not yet known.\n\nKey uncertainties\nCurrent intent is not established \u2014 his silence in response to direct questioning leaves this genuinely unknown rather than answered. No baseline exists against which to judge whether this presentation represents a change for him. No resources have been confirmed as available and usable, though none have been ruled out either. The degree of intoxication and its effect on his current capacity to delay acting is not quantified.\n\nIntegrated formulation\nBecause there is no prior contact or history, Risk Status cannot be established against a reference population, and because there is no known baseline, Risk State cannot be framed as a change from his own pattern \u2014 only the acute presentation itself can be described. Currently, that presentation includes two recent, connected losses (relationship separation, then loss of contact with his children), heavy alcohol use tonight, expressed hopelessness, and confirmed access to a specific lethal means physically present with him. He did not confirm or deny intent when asked directly; this is an unanswered question, not a data point resolved in either direction. No protective resources have been confirmed as available and usable, though this reflects an absence of information rather than a positive finding that none exist. The main uncertainty is current intent, compounded by intoxication that plausibly reduces his capacity to delay acting whatever that intent is. Foreseeable changes \u2014 further drinking, loss of contact with the call, or confirmation of a plan \u2014 could each materially alter the picture and warrant close attention as the contact continues.\n\nTherefore\nGiven confirmed proximate access to a specific means, active intoxication, an unresolved direct question about intent, and acute precipitating losses, with no protective resources yet confirmed, this presentation warrants urgent emergency response rather than continued routine Helpline management, pending any information from further direct enquiry that would change that picture.\n"}], "grading": null}, {"id": "chronic-ideation-no-change-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nCompared with the reference population of people with chronic, recurrent suicidal ideation who maintain established supportive contact with this service, this caller's enduring vulnerability is marked by suicidal thoughts she describes as present in the background on an ongoing basis, contact with the service on a roughly weekly basis, and a three-year history in which this pattern has not progressed to any acted-upon behaviour. Beyond these facts, information sufficient to place her more precisely against this or any other comparator (e.g. psychiatric history, prior attempts, broader clinical profile) has not been provided and is not established from available information.\n\nRisk State\nCompared with her own established baseline, the caller reports no material change tonight: she describes the ideation as being at its usual intensity, states there is no plan and no intent, and reports having had a decent day. This is self-reported information from the caller directly, with no collateral source available to corroborate it. Taken on its own terms, it indicates no material change from baseline. The absence of an offered account of new stressors should be read as an absence of reported change, not as positive evidence that no change has occurred outside her awareness or disclosure.\n\nResources\nThe call itself represents an actively used resource: an established, weekly pattern of contacting this service specifically to talk the ideation through, which by her account and the three-year history has been usable and has not required escalation to date. This is a resource that is both available and currently being used, not merely one that exists in principle. Information about other potential resources \u2014 family, friends, treatment engagement, a safety plan, or other supports \u2014 has not been provided in this contact and is not confirmed as available or unavailable; it should be treated as not yet established rather than assumed absent.\n\nForeseeable Change\nNo specific foreseeable precipitant (upcoming event, loss, change in supervision or access, anniversary, or similar) has been identified in the information available for this contact. The main foreseeable relevant change would be any future contact in which she reports a departure from this pattern \u2014 for example, new intent, planning, access to means, increased intensity, or a marked change in her ability to be talked through the ideation as usual \u2014 which would warrant fresh assessment at that time. Continuation of the existing weekly contact pattern is not itself a risk indicator and should not be treated as one; nor would a gap in contact automatically indicate deterioration, since reduced contact is a loss of visibility rather than evidence of risk change.\n\nKey uncertainties\nCorroboration of \"no change\" rests solely on self-report in this single contact; no collateral information is available. Wider protective or vulnerability factors (social support, treatment engagement, psychiatric history, prior attempts) are not established from the information provided for this contact.\n\nIntegrated formulation\nBecause this caller has an established pattern of chronic background suicidal ideation and weekly supportive contact that has not progressed to acted-upon behaviour across three years, her presentation carries an enduring but longstanding and previously well-contained vulnerability. Currently, she reports no material change from her own baseline: same intensity, no plan, no intent, and a comparatively good day, with the call itself following her usual pattern of talking the ideation through. The active use of this established coping pathway is a protective factor operating in this contact. The main uncertainty is that this account rests on self-report alone, with no collateral corroboration and no information about her wider current resources or context beyond what she has disclosed tonight. No specific foreseeable precipitant has been identified; the relevant marker for review is any future departure from this established pattern, not the pattern's mere continuation.\n\nTherefore\nThe formulation supports continued Helpline management via brief supportive contact consistent with her established pattern, with no indication from tonight's information that escalation beyond this level is warranted.\n"}], "grading": null}, {"id": "repeated-contact-uncertain-function-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nNo previous history is on file and no collateral information is available, so\nenduring vulnerability cannot be established against any named reference\npopulation (general population, service-contact population, or a clinically\nsimilar group). There is no information here \u2014 no diagnosis, no prior\nattempts, no established pattern of contact predating this 48-hour window \u2014\nfrom which a comparator-based judgement about standing vulnerability could be\nmade. Status is not established.\n\nRisk State\nA within-person comparison requires a baseline for this specific person, and\nnone exists: this is the first contact on file, so there is no prior\npresentation to compare tonight's calls against. The six calls in 48 hours are\ntherefore acute-window data, not a change from a known starting point. Within\nthat window, the content is inconsistent \u2014 two of six calls reference\n\"thinking about ending it,\" four do not \u2014 and each call has ended shortly\nafter the coping question is raised. This pattern cannot, on its own, be read\nas escalation, de-escalation, ambivalence, testing-the-service, or reassurance\nseeking; the function of the repeated, truncated contact is not established\nfrom frequency or from the pattern of hang-ups alone. It is equally true that\nthe ideation comments are not established as resolved, minimised, or\nwithdrawn \u2014 they have not been retracted, only not repeated in four of six\ncalls, and non-mention is not evidence of absence. Whether intent, planning,\nor capability has changed at any point across the six calls cannot currently\nbe determined.\n\nResources\nNo internal coping resources, relational supports, service engagement, or\nenvironmental protections have been confirmed as available and usable. This\nreports an absence of information, not a finding that no resources exist \u2014\nthey are unconfirmed, not unavailable. The repeated act of calling the\nhelpline six times is itself observable engagement with a service resource,\nthough what sustains it (comfort in contact, difficulty completing\ndisclosure, something else) is not established. No safety plan, named\nsupports, or means-restriction status are on record.\n\nForeseeable Change\nPlausible developments include: a future call in which the coping question is\nanswered rather than avoided, which would be the first point at which direct\nsuicide enquiry could actually be completed; a call in which she discloses\ncurrent intent, a plan, or access to means, which would materially change the\npicture; and continued short, inconclusive calls, which would extend the\ncurrent uncertainty rather than resolve it. Cessation of calling altogether is\nalso foreseeable; this would represent loss of visibility into her situation,\nnot, by itself, evidence that her risk has increased or decreased.\n\nKey uncertainties\nWhether suicidal ideation is current, whether intent or a plan exists, what\nis prompting the pattern of repeated brief contact, why calls end when coping\nis raised, and what (if any) supports or protective factors she has, are all\nmaterially uncertain. No historical or collateral information exists to\nnarrow any of this.\n\nIntegrated formulation\nBecause there is no prior history and no collateral information, enduring\nvulnerability cannot be assessed against any reference population, and there\nis no established baseline against which to judge whether tonight's pattern\nrepresents a change for this person. Currently, six brief calls in 48 hours\nshow inconsistent mention of suicidal ideation and a repeated pattern of\ndisengagement at the point coping is asked about; this is acute-window\ninformation, not a confirmed deterioration or a confirmed resolution.\nHowever, repeated contact with the service is itself an observable point of\nengagement, though nothing about what other resources she has, or is able to\nuse, is currently confirmed. The main uncertainties are current intent,\nplanning, means access, and the function of the repeated short calls, none\nof which can be resolved from call frequency or content pattern alone. The\nformulation would be materially changed by a call in which the coping\nquestion is answered, by disclosure of intent or a plan, or by information\nnarrowing why calls repeatedly end at the same point. Therefore, the\nproportionate response is to prioritise completing direct suicide enquiry\nduring the next contact, rather than to escalate on frequency or pattern\nalone, which the formulation does not support as an independent risk\nindicator.\n\nTherefore\nContinued Helpline management with a specific focus on completing direct\nsuicide enquiry at next contact is the response the formulation supports;\nescalation is not currently supported because the basis available (call\nfrequency, truncated calls, inconsistent historical mentions of ideation) has\nbeen assessed and found not to establish current risk state, intent, or\nmotivation on its own, and no other information supports a higher-tier\nresponse at this time.\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {"acute-intent-access-to-means-with_skill": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nThere is no prior contact with this service and no known clinical, psychiatric, or suicidal-behaviour history for this caller. Risk Status is a between-person comparison against a named reference population (e.g., other first-time male callers in acute relational crisis, or the general population), and there is currently insufficient information to place this man's enduring vulnerability relative to any such comparator \u2014 no data exist on previous suicidal behaviour, psychiatric history, substance use pattern, or established coping/crisis pattern. This should be stated as an absence of information rather than inferred as either elevated or unremarkable standing vulnerability.\n\nRisk State\nNo personal baseline has been established through prior contact, which limits a strict within-person comparison. However, the available timeline itself supplies a meaningful \"before/after\": two weeks ago he was living with his wife and had contact with his children; this weekend that contact was lost following a custody dispute; tonight he is drinking heavily, holds his prescribed sleeping tablets \"right here,\" states \"I don't see the point anymore,\" and goes silent when asked directly whether he plans to take the tablets. Taken together, this represents an acute, recent-onset deterioration \u2014 rapid loss of two central relational anchors, active intoxication, an explicit hopelessness statement, unrestricted proximity to means, and reduced ability or willingness to disclose intent under direct enquiry. This is not simply distress; the combination of intoxication, hopelessness language, and access to means alongside non-disclosure indicates a materially different and more acute state than would be expected from the relational stressor alone. It cannot be described as \"no change\" or \"temporary\" with confidence \u2014 the correct characterisation is sustained/material deterioration occurring within a short and identifiable time window, with the caveat that no longer-term baseline exists to compare it against.\n\nResources\nNo protective resources have yet been identified as both available and usable. The wife, previously a likely relational resource, is now the source of the rupture and her current availability/acceptability as support is unknown. Contact with children \u2014 a plausible reason for living \u2014 has just been lost. No other family, friends, employer, or treatment engagement has been mentioned. Alcohol intoxication is likely reducing his capacity to use whatever coping strategies he may ordinarily draw on. No safety plan exists. Crucially, the environmental resource of reduced access to lethal means has not yet been established \u2014 the tablets remain physically present and unsecured. His silence when asked directly about intent also currently forecloses the collaborative safety resource that direct, honest disclosure would provide. At this point, resources should be treated as effectively unavailable rather than merely unconfirmed.\n\nForeseeable Change\nPlausible near-term developments include: continued or increased alcohol consumption over the course of the night further lowering behavioural control; further contact (or lack of contact) with his estranged wife or about the custody dispute acting as an additional acute precipitant; the tablets remaining accessible and unremoved; increasing isolation as the night progresses; disengagement or call termination before safety is established; and, if the call continues, either disclosure of intent (indicating an immediate emergency) or continued non-disclosure (which should not be read as reassurance). Any of these would materially escalate the formulation and each is directly relevant given tonight's presentation.\n\nKey uncertainties\nWhether any tablets or alcohol have already been consumed beyond what has been stated; the quantities involved; whether he is alone or has any support person nearby or contactable; his exact location; any prior suicidal ideation, attempts, or mental health history; and the meaning of his silence in response to direct questioning \u2014 whether this reflects ambivalence, ongoing decision-making, ability to be talked through it, or concealment of a formed plan. These are not resolved by the information available and their absence should be treated as material uncertainty, not as evidence of either safety or danger.\n\nIntegrated formulation\nBecause this is a first contact with no established history, his enduring vulnerability relative to any reference population cannot presently be determined. Currently, however, a short and specific chronology \u2014 separation two weeks ago, loss of contact with his children this weekend, heavy drinking tonight, an explicit hopelessness statement, immediate physical proximity to a lethal means, and silence under direct suicide enquiry \u2014 indicates an acute and materially deteriorated state relative to his likely functioning before these losses. No protective resources have yet been identified as accessible or usable, and the means of harm remain unsecured. The main uncertainty is what his silence represents and whether any action has already been taken or is imminent, which direct continued enquiry has not yet resolved. Foreseeable developments \u2014 further drinking, further contact related to the custody dispute, or the call ending without means restriction \u2014 could each materially worsen the situation within the same evening. Therefore the combination of intoxication, unrestricted access to means, an explicit hopelessness statement, an acute precipitating loss, and non-disclosure under direct questioning together constitute sufficient concern for an urgent, active response rather than continued routine supportive contact alone.\n\nTherefore\nThis presentation warrants urgent emergency response (in line with organisational escalation/emergency procedures) \u2014 the priority is to keep him in contact, continue direct and specific suicide enquiry to clarify intent and any action already taken, and pursue means restriction and emergency services involvement given the combination of intoxication, unresolved intent, immediate access to a lethal method, and absence of any confirmed protective resource; this should not be downgraded to safety planning or brief supportive intervention on the basis of his silence, since non-disclosure here does not establish absence of risk.\n"}], "acute-intent-access-to-means-without_skill": [{"name": "output.md", "type": "text", "content": "# Crisis Call Response: Acute Risk Assessment and Action Plan\n\n## Case Summary\nMale caller, mid-40s, no prior contact with the service, no known history. Presenting factors tonight:\n- Relationship breakdown: separated from wife two weeks ago\n- Acute precipitant: lost contact with children over the weekend following a custody dispute\n- Alcohol: reports heavy drinking tonight\n- Means: has a bottle of his own prescribed sleeping tablets \"right here\"\n- Verbal expression of hopelessness: \"I don't see the point anymore\"\n- Went silent/non-responsive when asked directly whether he plans to take the tablets tonight\n\nThis combination \u2014 recent major loss, acute triggering event, alcohol intoxication, stated hopelessness, immediate access to a lethal means, and silence in response to a direct suicide-intent question \u2014 constitutes a **high acute risk presentation**. Silence in response to a direct intent question is not reassurance; it is frequently a marker of ambivalence or unwillingness to disclose a plan already forming, and should be treated as clinically significant, not neutral.\n\n---\n\n## Immediate Priorities (in order)\n\n1. **Stay on the line and keep him talking.** Do not end or rush the call to go make contact with someone else while he is alone with the tablets. Continuity of voice contact is itself a protective intervention.\n2. **Do not fill the silence with pressure or repeat the same closed question.** Silence after a direct question can trigger shutdown/withdrawal. Soften and slow down rather than repeating \"are you going to take them\" verbatim.\n3. **Actively assess and work to reduce access to means in real time**, in parallel with the conversation.\n4. **Determine location and whether anyone else is with him or nearby**, to enable emergency dispatch if required.\n5. **Engage emergency services if risk escalates or remains unresolved** \u2014 do not wait for an explicit \"yes\" to a plan before acting; the clinical picture already warrants escalation.\n\n---\n\n## Suggested Call Approach\n\n### Reconnect gently after the silence\nDo not immediately re-ask the same yes/no question. Use a reflective, non-judgmental re-approach:\n- \"You've gone quiet \u2014 that's okay, take your time. I'm still here with you.\"\n- \"It sounds like this is really hard to put into words right now.\"\n- Then move to a **softer, still-direct** re-attempt once rapport is re-established: \"I want to check in with you honestly \u2014 right now, tonight, do you have a plan for those tablets?\" Silence a second time should be treated as equivalent to an affirmative for risk-planning purposes, not as an \"unknown/low\" result.\n\n### Explore the acute stressor without minimizing\n- Acknowledge the loss of contact with his children as the acute trigger: \"Losing contact with your kids this weekend, on top of the separation \u2014 that's an enormous amount to carry, especially tonight.\"\n- Avoid reassurance-based statements (\"it'll get better,\" \"the custody situation will sort itself out\") \u2014 these can feel dismissive and are not verifiable to him right now.\n\n### Assess directly (once rapport allows)\n- Current intent: has he thought about *how* and *when*, beyond the bottle being present\n- Access: how many tablets are in the bottle, has he already taken any tonight, is anything else in reach (alcohol quantity/type consumed, any other medications)\n- Protective factors: is anyone else home or nearby, other supports he trusts, previous coping strategies, anything currently keeping him from acting\n- Prior history: any previous attempts, self-harm, mental health treatment, current medications/diagnoses (even though the service has no history, ask him directly)\n\n### Means restriction \u2014 attempt in real time\nThis is a priority action, not an afterthought:\n- Ask him directly to physically move the tablets: \"Would you be willing to put the bottle in another room, or hand it to someone else in the house, while we talk?\"\n- If someone else is present or contactable (family, friend, neighbour), ask if he would allow you to loop them in to remove/secure the tablets.\n- If he is alone and unwilling, this significantly raises urgency toward emergency dispatch.\n\n### Alcohol as a compounding risk factor\nNote explicitly that intoxication increases impulsivity and lowers the threshold for acting on suicidal thoughts, and can also increase the medical danger of any overdose (respiratory depression risk with sleeping tablets + alcohol). This should be factored into urgency, not treated as a separate issue to address later.\n\n---\n\n## Risk Determination\n\n**Classify as HIGH ACUTE RISK** based on:\n- Specific, immediately available lethal means (prescribed sleeping tablets, in hand)\n- Verbalized hopelessness (\"I don't see the point anymore\")\n- Acute, recent precipitating losses (separation + loss of contact with children within days)\n- Alcohol intoxication (impulsivity + lethality risk)\n- Non-disclosure/silence on direct intent questioning (treat as indeterminate-to-positive, not negative)\n- No existing protective relationship with the service (unknown baseline, no established safety net with you)\n\nDo not downgrade risk on the basis that he did not verbally confirm a plan. Absence of confirmation is not absence of risk here.\n\n---\n\n## Action / Escalation Plan\n\n1. **Continue to engage and assess in real time** using the above approach; do not disconnect.\n2. **Attempt collaborative means restriction** as described above.\n3. **Prepare for emergency services dispatch concurrently**, per your service's protocol for high-risk/imminent-danger calls (e.g., engage a second worker or supervisor to initiate location trace / welfare check dispatch while the primary responder keeps him on the line, if your system supports parallel handling).\n4. **Trigger dispatch without further delay if any of the following occur:**\n   - He discloses he has already taken tablets or intends to imminently\n   - He becomes unresponsive, slurred beyond his baseline in a way suggesting overdose or medical compromise, or the line goes dead\n   - He refuses to engage further and will not confirm safety\n   - He explicitly declines all offers of means restriction and support contact\n5. **If risk stabilizes somewhat during the call** (agrees to secure/hand over tablets, agrees to contact or accept contact from a support person, engages in safety planning): still arrange follow-up \u2014 a same-night welfare check or agreed check-in call, and a warm handoff to appropriate follow-up services (crisis mental health team, GP, family violence/separation support if relevant) given this is a first contact with no existing care plan.\n6. **Document thoroughly**: verbatim key statements, risk factors identified, actions taken, his responses to means-restriction attempts, and rationale for the escalation decision made \u2014 this is a first contact with no history, so the record created tonight becomes the baseline for any future contact.\n\n---\n\n## Key Clinical Reasoning Notes\n- The convergence of *recent loss + acute trigger + intoxication + means in hand + hopelessness statement + silence on direct questioning* is a well-recognized high-risk cluster; no single factor alone would necessarily warrant emergency escalation, but together they do.\n- Loss of child contact in a custody dispute is a well-documented acute trigger for suicide risk in men, particularly in the context of a new separation \u2014 this is not incidental detail, it is central to the formulation.\n- The correct clinical response to his silence is not to treat it as a \"no,\" nor to badger him into an answer, but to hold the risk as active and unresolved and act accordingly (continue engagement, pursue means restriction, prepare escalation) rather than waiting for explicit verbal confirmation of intent before taking protective action.\n"}], "chronic-ideation-no-change-with_skill": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nCompared with the general population, this caller carries elevated enduring vulnerability: suicidal ideation has been present continuously for at least three years, is severe enough to prompt weekly contact with a crisis service, and is described by her as a constant background experience rather than an occasional intrusion. Compared with a reference population of people who make recurrent, longstanding contact with Lifeline for chronic ideation, however, her standing is comparatively more favourable: she has no reported history of suicide attempts or self-harm across three years of contact, has sustained a stable, predictable pattern of help-seeking rather than escalating or erratic contact, and has consistently used the service as intended (to talk the thoughts through) rather than in the context of crisis presentations. Enduring vulnerability is therefore real but is accompanied by an established, non-escalating pattern that differentiates her from higher-status callers with attempt histories or unpredictable contact patterns.\n\nRisk State\nTonight's presentation indicates no material change from her own baseline. She reports the same intensity of ideation she usually describes, no plan, no intent, a \"decent day,\" and a contact that follows her typical weekly pattern and typical purpose (talking it through). No indicators of change are present in the domains that would ordinarily signal deterioration: no new specificity or planning, no reported increase in hopelessness, agitation, intoxication, isolation, or loss of behavioural control, and no reduction in her engagement or willingness to use support \u2014 if anything, her willingness to reach out and talk is consistent with her usual coping. Based on available information, this is a within-person comparison showing sameness, not escalation.\n\nResources\nHer primary current resource is the Lifeline contact itself, which is available, accessible, and demonstrably usable \u2014 she is using it tonight exactly as she has for three years, which supports rather than merely exists as an option for her. Her own capacity to articulate \"nothing has changed\" and to identify a decent day suggests some current self-monitoring and cognitive engagement. The three-year pattern of contact without acting on the thoughts is itself evidence of an established internal capacity to hold the ideation without translating it into behaviour, though the source and durability of that capacity are not detailed in the information available.\n\nForeseeable Change\nNo specific foreseeable trigger has been identified in tonight's contact. Generic possibilities always exist (e.g., future intoxication, an unreported stressor emerging later in the call, an anniversary or precipitant not yet disclosed) but none of these has evidentiary support from the material available and should not be treated as active concerns tonight. The main foreseeable-risk-relevant marker to watch for across future contacts would be any departure from this established pattern \u2014 for example, increased frequency or urgency of calls, emergence of specificity/planning, reduced ability to be reassured, or disengagement from her usual contact rhythm \u2014 any of which would warrant fresh formulation rather than assumption of \"business as usual.\"\n\nKey uncertainties\nCurrent information does not establish what, if anything, is happening in her broader context tonight beyond her own report (e.g., substance use, access to means, unreported precipitants), since these were not raised and are not stated to have been asked about. It also cannot be independently verified whether her self-assessment of \"nothing changed\" reflects accurate insight or some degree of minimisation; however, there is no positive evidence in the contact to suggest minimisation, and her insight into her own pattern after three years of contact is itself a relevant, if imperfect, source of information.\n\nIntegrated formulation\nBecause this caller has carried chronic, longstanding suicidal ideation for three years and makes weekly contact with the service, she carries elevated enduring vulnerability relative to the general population. Currently, however, her presentation shows no material change from her own established baseline: same intensity, no plan or intent, a reasonable day, and a contact that matches her habitual pattern and purpose. This is supported by a three-year history of sustained, non-escalating engagement without any attempts, and by her active, appropriate use of the service tonight as a coping resource. The main uncertainty is that no information is available about her broader context beyond her self-report, so subtle contextual change cannot be ruled out, though nothing in the contact positively suggests it. No specific foreseeable trigger is identified tonight; the relevant marker for future contacts is any departure from this established pattern. Chronicity and contact frequency should not, on their own, be read as indicators of acute risk in the absence of state change.\n\nTherefore\nThe proportionate response is continued Helpline management through brief supportive intervention consistent with her established pattern \u2014 direct suicide enquiry has appropriately confirmed no plan or intent, and this should be documented alongside the assessment of no material change from baseline; no escalation (Safety Contact, TL/Safety Huddle, CRG, or emergency response) is indicated on the basis of tonight's contact, as escalation would not be supported by either Risk Status or Risk State findings and would conflate chronicity and contact frequency with acute risk.\n"}], "chronic-ideation-no-change-without_skill": [{"name": "output.md", "type": "text", "content": "# Formulation and Response: Weekly Caller, Chronic Suicidal Ideation, No Change Tonight\n\n## Case Summary\n34-year-old woman, known to the service for 3 years, contacts approximately weekly with chronic suicidal ideation she characterises as a stable background phenomenon. Tonight: ideation present but unchanged in intensity, no plan, no intent, no acute stressor, describes a \"decent day,\" is calling to talk it through \u2014 consistent with her established, well-documented pattern. No prior acts of self-harm or suicide attempts in the 3-year contact history.\n\n## Formulation\n\n**Risk level: baseline/chronic, not acute.** The core clinical task here is differentiating chronic suicidal ideation (a longstanding trait-like feature of her presentation, often seen in complex trauma, personality-level difficulties, or chronic depression) from an acute suicidal crisis. Tonight's call has none of the markers that typically signal escalation:\n\n- No change in ideation intensity, frequency, or quality\n- No emergence of plan, means, or intent\n- No new stressor, loss, or precipitant\n- No change in protective factors\n- Mood if anything is slightly better (\"decent day\")\n- Help-seeking behaviour is itself protective and consistent with her adaptive coping style \u2014 she is using the service exactly as it is meant to be used\n\nThree years of weekly contact without any act is a substantial protective data point. It suggests the calls function as an effective coping/regulation strategy for her, not as a crisis behaviour or a precursor to escalation. Treating a stable, chronic presentation as if it were a new acute risk episode every time would be both clinically inaccurate and counter-therapeutic \u2014 it risks teaching her that calm, honest disclosure of background ideation triggers heavy-handed intervention, which could paradoxically suppress future help-seeking or push her toward minimising symptoms to avoid escalation responses.\n\nThat said, chronic suicidal ideation is not zero risk, and \"known to the service\" does not mean \"assume nothing has changed\" \u2014 the formulation still requires an active check, not a passive assumption based on pattern-matching to prior calls.\n\n## Proportionate Response\n\n1. **Standard risk check-in, not a full crisis assessment.** Briefly and collaboratively confirm the absence of change: ask directly about plan, intent, means, and any new stressors, and listen for anything that contradicts her own framing. This should feel like a normal part of the supportive conversation, not an interrogation \u2014 but it must still happen explicitly rather than being skipped because \"she said nothing's changed.\"\n\n2. **Provide the supportive listening contact she is asking for.** This is the primary intervention tonight. Let her talk it through, validate the exhausting, chronic nature of living with background ideation, and reinforce that reaching out is the right and effective thing she is already doing.\n\n3. **No escalation to emergency services, no imposed safety planning overhaul, no referral to crisis/acute pathways.** These would be disproportionate to presented risk and could damage the therapeutic relationship and her willingness to keep calling.\n\n4. **Light-touch review of her existing safety plan**, if one exists and it fits naturally into the conversation \u2014 not because risk indicates it's needed tonight, but as routine maintenance, e.g., \"does everything on your plan still feel right, or has anything changed?\" Keep this brief.\n\n5. **Document clearly and specifically**, not just \"no change.\" Record: ideation confirmed present, no plan/intent/means, no new stressors, mood stable-to-good, consistent with established baseline pattern, supportive call provided, no escalation indicated. This protects both the caller's continuity of care and the record, and gives the next call-taker an accurate comparator.\n\n6. **Close normally**, reinforcing the open door for future contact, rather than adding unusual instructions or follow-up that would signal (inaccurately) that tonight's call was treated as higher risk than it was.\n\n## Key Clinical Principle\nChronic suicidal ideation requires ongoing monitoring, not repeated crisis response. The proportionate action is a genuine but brief risk check confirming stability, followed by the supportive contact the caller is asking for. Escalating a stable, well-known pattern to crisis-level intervention is itself a risk management error \u2014 it can erode trust, discourage future disclosure, and misallocate crisis resources away from callers in acute distress. The response should match the actual clinical picture presented tonight, informed but not overridden by the 3-year history.\n"}], "repeated-contact-uncertain-function-with_skill": [{"name": "output.md", "type": "text", "content": "PORF FORMULATION\n\nRisk Status\nRisk Status cannot be established against any named reference population. There is no history on file and no collateral information, so it is not possible to say whether this caller's enduring vulnerability is elevated relative to, for example, other first-time/unknown-history contacts to this service, people with a similar disclosed-ideation profile, or the general population. The only status-relevant fact available is that within a 48-hour window she has disclosed \"thinking about ending it\" on two of six contacts \u2014 a directly reported statement, not yet corroborated by any longitudinal pattern. This should not be treated as equivalent to an established history of suicidal behaviour, and it should not be discounted either. Status is genuinely indeterminate rather than low.\n\nRisk State\nA within-person baseline for this caller does not yet exist beyond the current 48-hour window itself, so Risk State must be assessed provisionally from the pattern of these six contacts rather than from a prior known baseline. Within that window: contact frequency is high (six calls in 48 hours), each call is brief (under five minutes), and each ends shortly after she is asked how she is coping. Content varies \u2014 two calls include a stated wish to end her life, four do not mention suicidal ideation at all. This variability could reflect fluctuating distress that is genuinely inconsistent call to call, an unwillingness or inability to sustain the coping question regardless of her internal state, or different degrees of the same underlying distress that she discloses only intermittently. The current information does not establish which of these is occurring, and does not establish whether her state is deteriorating, stable-but-distressed, or improving. What can be said is that the contact pattern itself \u2014 increasing frequency, shortening duration, disengagement specifically at the point support is offered \u2014 is different from a single, resolved contact, and warrants attention as a pattern in its own right, independent of what it implies about suicide risk specifically.\n\nResources\nNo resources can currently be confirmed as available and usable. No collateral exists to identify supportive relationships, treatment engagement, or environmental protections. The service itself is a potential resource, but she is not yet using it as one \u2014 she disengages at the point the call moves toward exploring her coping, which is also the point resources would normally be identified or mobilised. This should be read as an access/engagement gap rather than as evidence resources are absent from her life.\n\nForeseeable Change\nPlausible developments include: continuation or further escalation of the calling pattern; a future call in which she remains on the line past the coping question, creating an opportunity to gather collateral and assess intent/means directly; cessation of contact altogether, which would remove the only current source of information and monitoring; and disclosure, in a subsequent call, of a plan, means, or timeframe that would materially change the picture from ideation to imminent risk. Each subsequent call is itself a foreseeable review point and should be treated as one.\n\nKey uncertainties\nWhether the same person is placing all six calls; the reason she disengages after being asked how she is coping (avoidance, ambivalence, distress, safety/privacy concerns, or something else); current access to means; whether there is any plan or timeframe attached to the stated thoughts of ending it; whether any supports, services, or protective factors exist in her life; and whether the four calls without mention of suicidal ideation reflect genuine absence of ideation in that moment or simply non-disclosure.\n\nIntegrated formulation\nBecause no history or collateral exists, Risk Status cannot be established against any comparator, and the formulation must rely on the pattern emerging across the current 48-hour window itself. Currently, that pattern shows frequent, brief contacts with inconsistent disclosure of suicidal ideation and a consistent point of disengagement \u2014 immediately after being asked how she is coping \u2014 which cannot yet be interpreted as either escalation or reassurance-seeking without further information. No protective resources have been confirmed as available or in use, largely because engagement has not reached the point where they would be identified. The main uncertainty is what is driving the repeated brief contact and disengagement, and whether the two disclosures of suicidal thinking reflect a stable or worsening state. The most significant foreseeable change is either a future call in which she remains engaged long enough to allow direct enquiry, or cessation of contact, either of which would substantially alter what can be known. Therefore the priority is to preserve and extend engagement and build a longitudinal picture across contacts, rather than to treat frequency or the ideation disclosures in isolation as grounds for emergency escalation.\n\nTherefore\nContinued Helpline management with active continuity measures is proportionate at this point: flag the pattern for the team/TL so all six contacts are read as one unfolding presentation rather than six isolated ones, use brief supportive intervention aimed specifically at sustaining engagement past the coping question (rather than repeating it in the same way each time), and conduct direct suicide enquiry \u2014 including access to means and any plan \u2014 the moment a call allows it. A TL/Safety Huddle consultation is warranted given the frequency and the two ideation disclosures, to agree how to hold this over multiple short contacts and to review after each subsequent call, but escalation to emergency response is not supported by the current formulation, since neither call frequency nor the presence of chronic-sounding ideation statements, on their own, establishes imminent risk. This should be revisited immediately if a subsequent call yields disclosure of intent, plan, or means, or if contact stops altogether.\n"}], "repeated-contact-uncertain-function-without_skill": [{"name": "output.md", "type": "text", "content": "# Formulation and Response Plan: Repeated Short Calls, Uncertain Risk Function\n\n## Case Summary\n\n- 6 calls in 48 hours, each under 5 minutes\n- Pattern: caller hangs up shortly after being asked how she is coping\n- 2 of 6 calls contain reference to \"thinking about ending it\"; 4 do not mention suicidal ideation\n- No known history on file; no collateral information available\n\n## What the Formulation Should Say\n\n**1. Name the uncertainty explicitly \u2014 do not resolve it prematurely.**\nThe record does not currently support a confident read of this pattern in either direction. Two plausible (non-exclusive) accounts fit the data:\n\n- *Escalating risk with approach-avoidance*: she is in genuine distress, wants contact, but is not yet able to tolerate being asked directly about coping \u2014 she reaches for the phone, gets close to disclosure, and the anxiety/shame/fear of the conversation becomes too much, so she disconnects. On this account, the two SI-mentioning calls may be the more accurate signal and the four \"no mention\" calls reflect avoidance, not absence of ideation.\n- *Help-seeking behaviour testing the relationship/service*: repeated brief contact can also function as testing whether the line is safe, whether she'll be judged, or whether anyone will notice a pattern across calls \u2014 particularly if she has no other support and no history is on file. The hang-up after the coping question may be about the *question* (feels intrusive, unanswerable, or exposing) rather than about the risk content itself.\n\nThese are not mutually exclusive and the formulation should hold both rather than anchoring on the more reassuring (or more alarming) one. The honest statement for the file is: **frequency and brevity of contact plus inconsistent SI disclosure indicate an unresolved, active engagement attempt with unclear current risk level \u2014 this is a \"possible escalation, insufficient data\" formulation, not a \"low risk, attention-seeking\" formulation and not a \"confirmed high risk\" formulation.**\n\n**2. Treat the pattern itself as clinical information, independent of content.**\nSix calls in 48 hours from someone not previously known to the service is itself a signal of acute distress or crisis, regardless of what is or isn't said. The formulation should state this plainly: the *contact pattern* (frequency, timing, consistent point of disconnection) is itself a risk indicator, on top of and independent from the SI content in two of the six calls.\n\n**3. Avoid two specific formulation errors.**\n- Do not average the two SI-positive and four SI-negative calls into an implied \"40% likely SI\" and treat that as reassuring. Suicidal ideation disclosed even once in six recent contacts, from an unknown caller with an established pattern of fleeing the coping question, should be weighted toward the higher-risk end, not diluted by the non-disclosing calls.\n- Do not code the pattern as \"attention-seeking,\" \"test caller,\" or similar minimising labels in the absence of any actual assessment completed. No call has yet reached a full risk conversation \u2014 there is no basis to characterise the calls as low-stakes contact-seeking.\n\n**4. Flag the specific gap: no call has reached assessment.**\nEvery single call has terminated before coping/risk status could be established. That is the central clinical fact \u2014 this is not a caller who has been assessed six times with reassuring results; it is a caller who has been *unassessable* six times running. The formulation should record that current risk status is genuinely unknown, not low.\n\n## Proportionate Response\n\n**Immediate (this shift):**\n- Flag the caller ID/number (if available via caller ID or the two calls where she may have given identifying detail) for priority routing so that if she calls again, it goes to a worker briefed on this pattern rather than being treated as a fresh, unconnected contact.\n- Brief the next shift/handover explicitly: 6 calls/48 hrs, consistent disconnection point, mixed SI disclosure, no assessment completed, no history, no collateral.\n- If policy and legal basis allow, and a number is available, consider whether a callback attempt is appropriate per local protocol \u2014 but only if this is within your service's normal practice for repeat crisis contacts, not as a one-off improvisation. Do not initiate emergency service welfare checks based on this pattern alone; there is not yet a specific, current, credible indicator of imminent risk (e.g., stated plan, means, intent, or a call ending in a way that itself signals immediate danger). That threshold has not been met by what's documented.\n\n**Approach on the next call (whether tonight or later):**\n- Slow down before reaching the coping question. The pattern suggests that question is the trigger point for disconnection \u2014 so the priority is not to skip it, but to build enough safety and pacing first that she can stay on the line through it.\n- Name the pattern gently and non-judgementally early in the call if clinically appropriate: acknowledge she's called several times, that's okay, and she doesn't have to have the right words \u2014 this can reduce the shame/pressure that may be driving the hang-up.\n- Prioritise staying connected over extracting a risk rating in any single call. A completed, gentler conversation this time is more valuable than a forced direct question that produces call #7.\n- If she discloses SI or gives any indication of plan/means/intent, follow standard direct risk assessment and safety planning protocol from that point \u2014 the uncertainty in the formulation is about *interpreting the pattern so far*, not a reason to soften the response once clearer risk information is actually obtained.\n\n**Documentation:**\n- Record this as an active, unresolved pattern requiring continuity of care across shifts/workers, not as six discrete, closed contacts.\n- Explicitly log \"risk status: unknown/unable to assess\" rather than defaulting to a low-risk code, so future workers don't inherit a falsely reassuring picture.\n\n**Escalation threshold:**\n- Escalate to a supervisor or duty clinician now to make a joint decision on whether proactive outreach (if a number/identity is available) is warranted given the frequency and the SI mentions, even without a completed assessment. This is a judgement call that should not sit with a single call-taker alone given the ambiguity \u2014 that itself is part of the proportionate response: shared decision-making under uncertainty, rather than either unilateral escalation to emergency services or unilateral downgrading to routine follow-up.\n"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "safety-planning", "runs": [{"id": "means-safety-non-moralising-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "Means / environmental safety\n\nAccess problem: PORF material establishes that the caller has access to a firearm kept at home, and that this access is clinically relevant to their current risk \u2014 i.e. it is a lethal means available to them within the environment where their crisis pattern plays out.\n\nFeasible reduction in access: The relevant reduction is removing the firearm from the home environment entirely (temporary off-site storage elsewhere, e.g. with another party, or via a formal storage/surrender option) rather than any in-home modification. In-home measures do not reliably separate the person from access during a crisis and are not treated here as an equivalent substitute for removal.\n\nWho can safely implement it: Not established in the material provided \u2014 the plan needs to identify a specific person (not the caller themself, given the access problem is the caller's own access) who is willing and able to take the firearm off-site, or confirm the caller's own willingness to arrange formal temporary storage/surrender through an appropriate service. If no such person or pathway has been identified yet, that is a gap to close as part of finishing this plan, not an assumption to fill in.\n\nFeasibility: Not established in the material provided whether removal is realistic in this case \u2014 e.g. whether the caller will consent, whether a person willing to hold the firearm exists and is available in the relevant timeframe, or whether a formal surrender pathway is accessible to them. This needs to be checked directly with the caller rather than assumed either way.\n\nCompletion status: Pending. Based on the material provided, this is a means-safety action that has been identified as clinically indicated but not yet actioned \u2014 agreement to consider it (if any) is not the same as the firearm actually having left the home. Status should be updated to \"removed/actioned\" only once that has actually occurred, and followed up rather than left as an open item indefinitely.\n\nIf this isn't enough\nIf the firearm cannot be removed from the home (caller declines, no available person, no accessible pathway) before the next period of risk, this must be escalated as an active safety gap \u2014 name it explicitly rather than letting the plan proceed as if means safety were resolved, and route to the appropriate emergency/crisis pathway per the immediate-danger guidance if risk is current.\n\nCollaboration status\nNot established in the material provided whether the caller has actively agreed to this step, partially engaged, or not yet been asked \u2014 record the actual status once known rather than assuming agreement.\n\nFeasibility check\nUntested: whether a specific person or pathway for removal exists and is genuinely available; whether the caller will follow through under actual crisis conditions rather than in a calm conversation. This entire section should be treated as unresolved until those are confirmed.\n"}], "grading": null}, {"id": "non-collaborative-caller-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN\n\nCrisis state this plan addresses\nNot established in the material provided. The caller did not engage with plan-building, so no person-specific crisis pattern (triggers, means, timing) could be drawn from this contact. Whether a crisis pattern has been established elsewhere (prior enquiry, formulation, or previous contacts) is not established in the material provided.\n\nEarly warning signs\nNot established \u2014 could not be developed without the caller's collaboration.\n\nIndependent coping steps\nNot established \u2014 could not be developed without the caller's collaboration.\n\nInterpersonal / environmental support\nNot established \u2014 could not be developed without the caller's collaboration.\n\nMeans / environmental safety\nNot established \u2014 could not be developed without the caller's collaboration. Whether means safety has been addressed in any other contact is not established in the material provided.\n\nIf this isn't enough\nNo agreed escalation step could be established with the caller in this contact. Standard service escalation information (how to reach crisis support, including this service, if things change) should be confirmed as offered per organisational policy \u2014 whether it was actually stated during this call is not established in the material provided from the description given. [If the transcript/notes confirm this was said, record it explicitly here instead.]\n\nCollaboration status\nCaller declined to engage. Invited to build a safety plan, stated \"I don't need a plan, I'm fine,\" and ended the call shortly afterward. No plan content was developed or agreed. This should be recorded as: safety plan offered, declined by caller \u2014 not as \"safety plan completed,\" \"not required,\" or \"no risk identified.\" Declining to engage is not evidence risk is absent, and it is not evidence risk is present either \u2014 it is only evidence that planning did not occur on this contact.\n\nFeasibility check\nNot applicable \u2014 no plan content exists to test for feasibility. Nothing in this contact establishes whether the caller has an existing plan, prior formulation, or other protective/risk factors; those are gaps to route back for (Suicide Enquiry / PORF Formulation) rather than to infer from the refusal itself. The refusal itself, and the abrupt end to the call, may be relevant to risk formulation and should be passed to that process rather than assessed here.\n\nNote on next steps: Per this skill's boundary, it does not formulate risk or decide escalation. If the caller's refusal, tone, or abrupt disconnection raises current risk concerns, that determination and any immediate-danger response belongs to PORF Formulation / CRG Triage, not to this document. This record exists to accurately capture that a safety-planning attempt was made and did not result in a plan \u2014 not to substitute for that formulation.\n"}], "grading": null}, {"id": "specific-collaborative-but-unsafe-strategy-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN REVIEW\n\nVerdict: Not yet usable as written. Most of the plan is genuinely strong \u2014 specific, person-tested, collaboratively built with named supports who've confirmed their roles. But one step (the frozen phone) actively undermines the plan's own escalation step, and that's not a minor wording issue \u2014 it's a structural conflict that needs to be resolved before this plan should be signed off as complete.\n\nCrisis state this plan addresses\nEstablished late-night suicidal crises, with access to prescription medication. This is carried from existing formulation/enquiry material as the pattern being planned for. Not established in the material provided: what specifically triggers or escalates these episodes (e.g. isolation, a particular thought pattern, a specific event) \u2014 the plan opens with \"when I start feeling like this,\" which names a state but not the recognisable early signs of it. That gap sits between questions 1 and 2 below.\n\nEarly warning signs\nNot specific in the material as given. \"When I start feeling like this\" is the person's own shorthand, but the plan doesn't capture what \"this\" actually looks like early \u2014 thoughts, physical sensations, or behaviours the person or Jade would notice before the crisis is already underway. This is worth going back to the person for directly: what do you notice first, before it gets to the point of needing to text Jade? Without that, the plan's entry point is only legible to the person retrospectively, which risks it being recognised too late to use the earlier steps.\n\nIndependent coping steps\nThe freezer strategy is genuinely person-specific and was arrived at collaboratively \u2014 that's real strength, not a generic placeholder. It's plausible it does break the urge to check messages or spiral, which is a concrete, testable claim rather than vague reassurance.\n\nHowever, it fails the \"doesn't create a competing safety problem\" check. The plan's own final step is \"if things are still bad, I call the crisis line\" \u2014 but the phone that would be used to make that call has just been physically sealed in a bag and put in the freezer. If the freezer step doesn't resolve the crisis (which is exactly the scenario the escalation step exists for), the person now has to retrieve, unwrap, and dry off a phone before they can act on it \u2014 at exactly the point they're least likely to have the coordination, patience, or motivation to do that. A friction technique that also cuts off the ability to call for help if the friction doesn't work is a net-negative trade, even though it's genuinely person-specific and was arrived at together.\n\nThis needs to go back to the person as a design problem, not be dropped unilaterally: what would give the same \"I physically can't keep checking/spiralling\" effect without also blocking the escalation route? Options worth raising with them (not prescribing): a physical barrier that doesn't disable the device itself (phone left in another room, given to whoever's in the house, silenced/face-down rather than frozen), or a clear amendment to the plan that a specific, always-accessible backup way to reach Jade or the crisis line exists that doesn't depend on the frozen phone (e.g. a landline, a housemate's phone, a doorbell/knock arrangement with whoever holds it). Whatever's chosen needs the same collaborative confirmation the freezer idea got.\n\nInterpersonal / environmental support\nJade: specific, named, confirmed she always replies and has confirmed this role directly \u2014 meets the bar of an actually available and willing resource, not just a relationship that exists. Availability at the specific late-night times these crises occur isn't explicitly confirmed (does Jade see late-night texts promptly, or reply the next morning?) \u2014 worth confirming that timing detail given the crisis window is specifically late-night.\n\nMeans / environmental safety\nMum holding the medication during risk weeks: this is a concrete, feasible, clinically appropriate means-restriction step, aimed at the actual established risk (access to prescription medication), with a specific person confirmed as willing and able to implement it. This is a genuine strength of the plan. Worth clarifying operationally (not for this skill to specify how, but for the person/service to confirm): how \"risk weeks\" get identified and communicated to Mum in practice, so the handover actually happens before it's needed rather than being agreed in principle only.\n\nIf this isn't enough\n\"I call the crisis line\" is present and specific rather than being the plan's only content, which is good \u2014 but its position and reliability are compromised by the phone-in-freezer step immediately before it in the sequence. As currently written, the plan's own structure blocks its own final safety net at the exact moment it's most needed. This needs to be resolved (see coping-steps note above) before the escalation step can be relied on as written.\n\nCollaboration status\nCollaboratively developed. The person, Jade, and the caller's mother were all directly involved in building the plan and have each confirmed their specific roles. This is a genuine strength \u2014 not just agreement in a calm moment, but named people confirming concrete commitments (Jade replying, Mum holding medication). This status should be recorded as-is; it doesn't need to be downgraded by the phone-freezer issue, which is a design flaw in one step, not evidence the collaboration wasn't real.\n\nFeasibility check\nTested/plausible: the freezer trick as a break-the-spiral technique (person's own account it works), Jade's willingness and reliability, Mum's willingness and access to implement medication removal during risk weeks.\nUntested/unknown: early warning signs specific enough to trigger step 1 in time; Jade's availability specifically at late night; how \"risk weeks\" get flagged to Mum operationally; and \u2014 the core issue \u2014 no confirmed way to reach Jade or the crisis line if the freezer step doesn't work and the phone is the only route to both.\n\nWhat needs to happen before this is usable\nGo back to the person (and ideally Jade) and resolve the phone-access conflict directly: either the friction method changes to something that doesn't disable the escalation channel, or a backup escalation route independent of the frozen phone is agreed and confirmed. This is a small, concrete fix to an otherwise strong, genuinely collaborative plan \u2014 not a reason to discard the plan or start over.\n"}], "grading": null}, {"id": "ugly-specific-plan-recognised-as-good-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN REVIEW\n\nVerdict: Not usable as written. Three of the four core elements are strong,\nperson-specific, and feasible \u2014 but one step (the freezer) creates a\ncompeting safety problem that directly disables the plan's own escalation\nstep. This is a structural flaw, not a wording issue, and needs to be fixed\nbefore this plan is signed off.\n\n---\n\nCrisis state this plan addresses\nLate-night intoxication (3+ drinks) with impulsive contact toward an ex-partner,\nin the context of prescribed medication being accessible at home. Consistent\nwith the established pattern for this caller.\n\nEarly warning signs\n\"3+ drinks and starting to text my ex\" \u2014 specific, behavioural, and tied to\nthis person's actual pattern rather than a generic mood cue. This is\nplausibly early enough to act on: it names the onset of the risk behaviour\nitself rather than a point already deep into crisis. One caveat: by the time\nsomeone is intoxicated enough to be texting an ex, self-monitoring and\nfollow-through on a planned step can already be degraded \u2014 the plan doesn't\naddress whether this person can reliably execute step 3 below in that state\n(see feasibility check).\n\nIndependent coping steps\n\"Phone in the freezer, wrapped in a bag\" is specific, memorable, and clearly\ndesigned with this person's actual failure mode in mind (compulsive texting).\nAs a pure friction technique against contacting the ex, it's well-designed \u2014\nconcrete, not generic, and plausibly executable even somewhat intoxicated\n(a physical action, not one requiring insight or planning).\n\nHowever, this step cannot stand as written: it disables the only access\npoint the plan gives this person to their own crisis-line escalation and to\ntheir \"CALL FIRST\" contact. See \"If this isn't enough\" below \u2014 this is the\nplan's central problem, not a minor caveat.\n\nInterpersonal / environmental support\nSister \u2014 agreed to hold the medication bottle during weeks flagged in advance\nvia a Sunday-night check-in text. This is a genuine collaborative\narrangement (not just a named relationship): a specific action, a specific\ntrigger for it (the Sunday text), and stated willingness. Feasibility\ndepends on two things not established in the material \u2014 whether the sister\nreliably receives/acts on the Sunday text every risk week, and what happens\nif a risk week arises without warning (impulsive breakup contact doesn't\nalways give a week's notice). Worth confirming whether there's a fallback if\na risk week is identified only after Sunday has passed.\n\nMeans / environmental safety\nMedication held by the sister during identified risk weeks is a concrete,\nperson-specific means-restriction step, implemented by someone who has\nagreed to it \u2014 this is close to operationally complete, contingent on the\nSunday-text mechanism actually running every week it's needed (see above).\n\nIf this isn't enough\nThis is the plan's critical failure point. The stated escalation is:\n\"if I still feel unsafe after [the freezer], I call the crisis line, not a\nfriend.\" But the crisis line is saved on the phone that the plan has just\ninstructed the person to seal in a bag and put in the freezer. The plan\ngives no alternate route to the crisis line, a landline, a neighbour, or any\nother way to reach help once the phone is frozen. As written, the person's\nown escalation step is inaccessible for exactly as long as the coping step\nis doing its job.\n\nThis is not a case where a highly specific, person-tailored technique should\nbe waved through because it's clearly better than a generic placeholder. A\nfriction technique that also cuts off the person's ability to call for help\nif the friction doesn't work is a net-negative trade, not a positive one,\neven though the freezer idea is genuinely well-matched to this person. The\nplan needs one of the following before it's usable:\n- A means of reaching the crisis line that doesn't depend on the frozen\n  phone (e.g., a second device, a landline, a written number kept somewhere\n  else, a neighbour/housemate who can be woken), or\n- Resequencing so the crisis-line contact happens (or the option to make it\n  is preserved) before the phone goes in the freezer \u2014 e.g., call/text the\n  crisis line first, then freeze the phone as the technique for stopping\n  further contact with the ex, rather than freezing the phone as the first\n  and only response.\n\nCollaboration status\nReads as person-generated and specific throughout (first-person, concrete\ndetail, an actual agreement with the sister) \u2014 appears collaboratively\ndeveloped, not something written up on the person's behalf. This document\ndoes not establish whether the freezer/escalation conflict was noticed and\ndiscussed with the person, or whether it was written and agreed before this\nreview surfaced it.\n\nFeasibility check\nTested and reasonable: early warning sign is specific and pattern-matched;\nsister arrangement is a real agreement, not just an available relationship;\ncrisis line as the stated escalation target instead of an unreliable friend\nis a sound judgment call.\n\nUntested/unknown:\n- Whether the person can reliably execute the freezer step, and follow\n  through afterward, once already intoxicated and mid-episode.\n- What happens if a risk week isn't flagged by Sunday (impulsive contact\n  after an unanticipated breakup event).\n- Not established in the material provided: whether this person has a phone\n  alternative or any other way to reach the crisis line once the primary\n  phone is deliberately made inaccessible.\n\nNot usable in current form. The fix needed is narrow and specific: give the\nplan a path to the crisis line that survives the freezer step, or reorder\nthe steps so escalation access is preserved before it's used. Everything\nelse in the plan can stay as written.\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {"generic-polished-plan-review-with_skill": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN REVIEW \u2014 USABILITY ASSESSMENT\n\n## Bottom line\n\nNo, this plan is not usable. It is five generic coping statements that would\napply to almost anyone in almost any crisis. None of it is tested against\nthe specific state this person actually enters \u2014 late at night, alone,\ndrinking, post-breakup, with prescribed medication in the home and an\nestablished pattern of *impulsive* overdose risk. As written, it is a\ndocument that exists, not a plan that works. Per the foundational rule of\nthis skill: \"has a safety plan\" is not \"has a usable safety plan.\"\n\nWalking it line by line against the six operational questions this skill\nrequires a plan to answer:\n\n## 1. What crisis state are we planning for?\n\nNot named anywhere in the plan. The plan reads as if it could have been\nwritten before anyone knew this person's pattern. It should open by naming\nthe actual state: e.g. \"escalating suicidal ideation late at night, after\ndrinking alone, in the period following a breakup, with impulsive urges to\ntake prescribed medication on hand.\" Nothing in the five items reflects\nthat this is a *nighttime, intoxicated, impulsive* pattern \u2014 which changes\nwhat's feasible for every subsequent step.\n\n## 2. Early warning signs \u2014 missing entirely\n\nThere is no recognition step. Given the pattern is impulsive, this is the\nsingle most load-bearing gap: if the person can't recognise the state\nearly, none of the downstream coping steps get a chance to fire before\nimpulsive action does. The plan needs person-specific cues (e.g. \"third\ndrink,\" \"re-reading old messages,\" \"the thought 'I could just take these'\")\ncaptured from Suicide Enquiry material \u2014 this review can flag the gap but\ncan't invent the cues.\n\n## 3. \"Practice self-care and mindfulness\" / \"Engage in a hobby you enjoy\" \u2014 not feasible in the actual state\n\nThese are exactly the placeholder strategies this skill's discipline warns\nagainst. They may be true in general \u2014 but has anyone tested whether this\nperson, late at night, alone, several drinks in, and in acute distress, can\nactually access mindfulness or motivation for a hobby? Intoxication and\nacute dysregulation typically degrade exactly the executive function these\nstrategies require. Untested, these read as filler, not content.\n\n## 4. \"Reach out to a supportive friend or family member\" \u2014 unspecified and unverified\n\nNo name, no phone number, no note on whether that person is awake, reachable,\nand willing at whatever hour this crisis tends to occur, and no check on\nwhether an ex-partner or breakup-adjacent relationship is itself part of\nwhat's driving the crisis (interpersonal conflict is explicitly one of the\ncrisis-state factors to check). \"A supportive friend or family member exists\nin this person's life\" is not the same as \"a supportive friend or family\nmember is available and willing to be called at 1am, drunk, mid-crisis.\"\nThis needs a specific name, a specific number, and an explicit note on\navailability \u2014 or a flag that availability is unknown.\n\n## 5. Means / environmental safety \u2014 the most serious gap\n\nThis is the plan's critical omission. The referral material establishes a\nspecific, known lethal-means risk: prescribed medication at home, with a\npattern of *impulsive* overdose. The plan contains no means-restriction\ncontent at all. For an impulsive-overdose pattern, reducing access to the\nmeans during the risk window is one of the highest-yield interventions\navailable \u2014 and it is entirely absent. This should be addressed directly\nand practically: e.g. medication held by someone else during high-risk\nperiods, lock-box with delayed access, or reduced on-hand quantity \u2014\nwhichever is actually feasible given who's around this person and willing.\nThis is risk reduction, not a test of intent, and it should not be skipped\nbecause it's a harder conversation than \"practice self-care.\"\n\n## 6. \"Call the crisis line if things get worse\" \u2014 escalation content is inadequate on two counts\n\nFirst, per this skill's explicit rule, a single crisis-line line is not a\ncomplete escalation step, let alone a complete plan \u2014 it needs to specify\nwhat \"worse\" means for this person, and what happens if the crisis line\nisn't enough (emergency services, a specific person, going to an ED).\nSecond, position: this is a nighttime, intoxicated, impulsive pattern with\nmeans at home \u2014 closer to a current/near-current risk state than a distant\none. Burying the only escalation instruction as line 5 of 5, after four\nlines of generic coping content, doesn't match the urgency of the pattern\nbeing planned for.\n\n## Collaboration status\n\nNot addressed by this review \u2014 no information was provided about whether\nthe person collaborated in producing this plan, partially engaged, or\nwhether it was written for them. That should be recorded accurately in any\nrevision rather than assumed.\n\n## Feasibility check\n\nEvery element of the existing plan is untested against the actual crisis\nstate (nighttime, alone, intoxicated, impulsive, post-breakup). None of the\ncrisis-state stressors this skill requires checking \u2014 access, intoxication,\nmemory/recall in the moment, isolation, interpersonal conflict, shame \u2014 are\naddressed anywhere in the document.\n\n## What this needs before it can be rebuilt into a usable plan\n\nThis review is not a substitute for the missing person-specific detail. To\nturn this into something usable, the following needs to come from Suicide\nEnquiry / PORF material (or be gathered if it doesn't exist yet), not be\ninvented here:\n- The specific early-warning cues this person notices before the state is\n  fully in motion.\n- A named, specific support contact with confirmed availability at the\n  relevant hours \u2014 and clarity on whether an ex-partner is part of the\n  crisis trigger rather than a support resource.\n- What's actually feasible for this person to do alone, intoxicated, at\n  night (current plan assumes capacities \u2014 mindfulness, hobby engagement \u2014\n  that are unverified and often unavailable in that state).\n- A concrete, agreed means-restriction step for the prescribed medication,\n  with whoever is willing and available to hold/limit access.\n- A specific, appropriately-positioned escalation sequence beyond \"call the\n  crisis line\" \u2014 what \"not enough\" looks like and what happens next.\n\nOnce that material exists, this plan should be rebuilt in full using the\nskill's output format (crisis state / early warning signs / independent\ncoping steps / interpersonal-environmental support / means safety / if this\nisn't enough / collaboration status / feasibility check) rather than patched\nline-by-line \u2014 the current structure and sequencing don't match the urgency\nof the pattern, not just the content.\n"}], "immediate-danger-not-buried-with_skill": [{"name": "output.md", "type": "text", "content": "# Safety Plan \u2014 Immediate Danger Presentation\n\n## Preliminary note (read before the plan itself)\n\nPer the skill boundary: *\"It does not override the immediate risk pathway \u2014 a\nsafety plan is not a substitute for responding to current danger.\"*\n\nThe PORF material as described here \u2014 active plan, current access to means,\nunresolved/concerning intent \u2014 describes a person in immediate danger, not a\nperson approaching a future crisis period. That distinction changes what this\ndocument is for and how it's sequenced:\n\n- This is **not** a standalone deliverable to hand over and end contact on.\n  The immediate-risk pathway (direct assessment of current safety, emergency\n  services/crisis response as indicated by policy, means restriction in the\n  moment) takes precedence over plan-building. If that pathway hasn't already\n  been actioned, route there first \u2014 this document does not substitute for\n  it.\n- Because danger is current rather than anticipated, the invariant applies in\n  full: **escalation and means-safety content cannot sit at the bottom of a\n  five-step document.** They lead. Coping steps and longer-horizon supports\n  are secondary and only meaningful once immediate danger has been addressed.\n- If the person is not currently collaborating, or collaboration is uncertain\n  given the acuity, that must be recorded plainly (see Collaboration status)\n  rather than smoothed into an \"agreed plan\" that didn't actually happen that\n  way.\n\nThe structure below reflects that ordering. It is a template shaped for this\nacuity level \u2014 the bracketed content needs the actual PORF/Suicide Enquiry\nspecifics to be real; nothing here should be filled with placeholders that\nread like content (see skill's reasoning-shortcuts list).\n\n---\n\n## SAFETY PLAN \u2014 IMMEDIATE DANGER\n\n### 0. Immediate response status (precedes the plan)\n[State plainly whether the immediate-risk pathway has already been actioned\n\u2014 e.g., emergency services contacted, current physical safety confirmed,\nmeans already partially or fully separated from the person \u2014 or whether this\ndocument is being built *before* that has happened, in which case say so and\ndo not proceed to build out steps 3\u20135 as if the situation were stable.]\n\n### 1. If this isn't enough \u2014 escalation (moved first, not last)\n[Explicit, specific, immediately actionable: who is contacted, how, right\nnow, if risk escalates further or the plan doesn't hold in the next few\nminutes/hours \u2014 not \"call us if it gets worse\" as the whole of this section.\nName the specific service/number relevant to jurisdiction and policy, name a\nspecific person if one is genuinely available right now, and state what\n\"this isn't working\" looks like for this person specifically, drawn from the\nexisting formulation (e.g. specific escalation cues already identified in\nPORF/Suicide Enquiry material \u2014 not a generic deterioration marker).]\n\n### 2. Means / environmental safety (elevated ahead of coping steps)\n[Because access to means is current and specific per the PORF material,\nconcrete separation steps come before internal coping content, not after.\nState exactly what the means is, who can take custody of it or whether\nremoval from the immediate environment is being done directly, by whom, and\nby when \u2014 \"by end of this contact\" if acuity requires it, not \"this week.\"\nFrame as practical risk reduction, not a test of intent. If no one is\nconfirmed available to hold/remove the means, say that plainly rather than\nlisting an unconfirmed person as if the step is complete.]\n\n### 3. Crisis state this plan addresses\n[Specific, drawn from existing formulation/enquiry material \u2014 the exact\npattern already established, not a generic \"if things get bad again.\"]\n\n### 4. Early warning signs\n[Person-specific, early enough to act on \u2014 included for continuity/future\nuse, but note explicitly that if the current state has already progressed\npast these cues, steps 1\u20132 above are what's operative right now, not this\nsection.]\n\n### 5. Independent coping steps\n[Only include what's actually feasible in the current state per the\nfeasibility check below. If the person's current presentation (intoxication,\ndissociation, acuity) makes independent coping steps unrealistic right now,\nsay so rather than listing steps that read well but won't be used.]\n\n### 6. Interpersonal / environmental support\n[Specific people, specific contact method, with availability and willingness\nat this actual time noted or flagged as unknown \u2014 not named because they\nexist in the person's life. If a named support person is unavailable or is\nimplicated in the crisis pattern per the formulation, do not list them here.]\n\n### Collaboration status\n[Record accurately: did the person actively collaborate on this plan, engage\npartially, or were they unable/unwilling to engage given current acuity? If\nthis document was built without full collaboration because immediate risk\ntook precedence, state that \u2014 do not present it as an agreed plan if it\nisn't one.]\n\n### Feasibility check\n[What in this plan is tested against the person's actual crisis state\n(memory, access, shame, intoxication, isolation, time of day, interpersonal\nconflict) versus what remains genuinely unknown. Given the acuity here, flag\nexplicitly if steps 3\u20136 are aspirational/for-later rather than validated for\nthe current moment \u2014 the plan should not overstate its own reliability at\nthis stage.]\n\n---\n\n## Why the structure differs from a standard (future-crisis) plan\n\nStandard ordering (crisis state \u2192 early warning signs \u2192 independent coping \u2192\ninterpersonal support \u2192 means safety \u2192 escalation) assumes the plan is being\nbuilt *ahead of* a crisis period, for later use. Here, per the material\ndescribed, indicators point to danger that is current, not anticipated:\nactive plan, present access to means, intent not resolved. Under the skill's\ninvariant, that reorders the document \u2014 escalation and means safety move to\nthe top and are treated as the operative content, with the remaining sections\nretained for continuity but explicitly marked as secondary to what happens in\nthis contact. This is a sequencing and emphasis change, not a different\nskill: the six operational questions are all still answered, just not in the\ndefault order, and not as if the situation were already stable enough for\nstep 3 onward to be the priority.\n"}], "means-safety-non-moralising-with_skill": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN \u2014 MEANS/ENVIRONMENTAL SAFETY SECTION\n\nNote on scope: This output builds only the means-safety portion of the plan,\nas requested. The other five plan elements (crisis state, early warning\nsigns, independent coping steps, interpersonal/environmental support, and\nescalation) depend on Suicide Enquiry / PORF Formulation material that has\nnot been provided here beyond the firearm-access finding. Those sections are\nnot fabricated below \u2014 they're marked as pending the relevant material. This\nsection should not be read or filed as a complete plan on its own.\n\n---\n\nMeans / environmental safety\n\nPORF material establishes that the caller has access to a firearm at home,\nand that this is clinically relevant to their current risk. That finding\nconverts directly into plan content \u2014 not into a test of how seriously the\ncaller means it, and not into an instruction framed around what they \"should\"\ndo to prove commitment to living. The aim is to change what's physically\nreachable in a moment of acute risk, independent of the caller's intent at\nany given moment.\n\nBefore finalising this section, the following needs to be confirmed with the\ncaller (currently unknown from the material as summarised) \u2014 mark each as\nresolved or still open in the record:\n\n- Whether the firearm is the caller's own or belongs to someone else in the\n  household.\n- Whether it is currently stored loaded or unloaded, and where (on person,\n  accessible location, locked).\n- Whether ammunition is stored with the firearm or separately.\n- Who else lives in or has regular access to the home, and whether any of\n  them are available, willing, and safe to involve (i.e. not themselves part\n  of the crisis pattern, e.g. not the person a conflict is escalating with).\n- Whether the caller currently has sole means of removing/securing the\n  firearm, or needs someone else to act (this determines whether the plan\n  step is something the caller does themselves or something that requires a\n  second person).\n\nPlan content (to be finalised once the above is confirmed with the caller \u2014\ndrafted here as the concrete options this reduces to, not as a generic list):\n\n1. Preferred option \u2014 temporary removal from the home.\n   \"When [recognisable crisis cue \u2014 pending Early Warning Signs section] is\n   present, I will ask [specific named person, once confirmed available and\n   willing] to take the firearm and ammunition out of the house and store\n   them somewhere I do not have access to, because removing it from the\n   physical environment is more reliable than relying on my own judgement or\n   willpower in that state. If no one can do this immediately, [next\n   feasible step below] happens first.\"\n\n2. If removal from the home isn't immediately possible \u2014 separation and\n   locking, as an interim step, not a substitute.\n   Where a lockable storage option exists (gun safe, lockbox) and someone\n   other than the caller holds the key/combination: store the firearm\n   unloaded, with ammunition locked separately from the firearm and held by\n   that other person. This is weaker than removal from the premises and\n   should be named as an interim measure in the record, not presented as\n   equivalent to it \u2014 the plan should note the gap and what would need to\n   change (e.g. someone becoming available to take it off-site) to close it.\n\n3. If no other person is currently available or willing (unknown \u2014 needs\n   confirming), that is itself a gap to record, not to paper over. Do not\n   write \"family member will secure the firearm\" unless a specific person\n   has actually agreed to it. If unresolved at the time of this plan, record\n   it as an open safety gap and route it explicitly to whoever is\n   coordinating follow-up (case manager / next contact), rather than letting\n   the plan read as complete when this step has no actual owner yet.\n\n4. Feasibility check specific to this step: confirm whether the caller\n   themselves would be the one physically moving/securing the firearm in any\n   scenario. If the crisis state involves impulsivity, intoxication, or\n   acute distress, a step that requires the caller to act alone at the point\n   of risk is weaker than one that has already been actioned in advance\n   (i.e. removal completed now, in a calmer state, rather than planned as\n   something to do \"when it gets bad\").\n\n5. This section addresses the firearm specifically because that is what the\n   material establishes as clinically relevant. It does not extend to other\n   means unless separately established in the Suicide Enquiry/PORF material\n   \u2014 do not pad this section with generic means-restriction content (e.g.\n   medication, other household items) that isn't grounded in what's actually\n   known about this person's access and pattern.\n\n---\n\nCrisis state this plan addresses\n[Pending Suicide Enquiry / PORF material \u2014 not established in the input\nprovided to this task]\n\nEarly warning signs\n[Pending \u2014 as above]\n\nIndependent coping steps\n[Pending \u2014 as above]\n\nInterpersonal / environmental support\n[Pending \u2014 as above; note this overlaps with the means-safety section above\nregarding who removes/secures the firearm, and should be reconciled with it\nonce built]\n\nIf this isn't enough\n[Pending \u2014 as above. Given that firearm access is established as clinically\nrelevant, this section, once built, should reflect that risk is not merely\nanticipated but current-adjacent, and escalation content should be\npositioned accordingly rather than defaulting to a closing line]\n\nCollaboration status\n[Not established in the input provided \u2014 record actual engagement once the\nmeans-safety conversation is held with the caller; do not infer agreement\nfrom this document alone]\n\nFeasibility check\nTested against the discipline in this skill: the means-safety content above\nis structured around who actually has access, availability, and willingness\n\u2014 not assumed. What remains genuinely unknown (household composition,\ncurrent storage state, ammunition location, and identity of any second\nperson) is flagged explicitly above rather than assumed favourably. This\nsection should not be treated as final until those points are confirmed\ndirectly with the caller.\n"}], "non-collaborative-caller-with_skill": [{"name": "output.md", "type": "text", "content": "SAFETY PLAN\n\nCrisis state this plan addresses\nNot established. The caller was invited to build a safety plan but declined\nto engage before any crisis pattern, early warning signs, or specific\ntriggers could be discussed. No formulation/enquiry material was developed\nor referenced during this contact to draw a plan from.\n\nEarly warning signs\nNot established \u2014 collaboration ended before this could be explored.\n\nIndependent coping steps\nNot established \u2014 collaboration ended before this could be explored.\n\nInterpersonal / environmental support\nNot established \u2014 collaboration ended before this could be explored.\n\nMeans / environmental safety\nNot established \u2014 collaboration ended before this could be explored.\n\nIf this isn't enough\nNot established as plan content. Note: whether current danger is present is\na risk-formulation question (PORF/CRG Triage), not something this skill\ndetermines. If the preceding contact indicates current/imminent danger\nrather than only declined planning, that must be routed through the\nimmediate risk pathway regardless of the planning outcome recorded here \u2014\nthis document does not substitute for that response.\n\nCollaboration status\nCould not/would not collaborate. The caller was invited to build a safety\nplan, stated \"I don't need a plan, I'm fine,\" did not engage further, and\nended the call shortly afterward. No plan content was developed or agreed.\nThis is recorded as a declined/non-collaborative attempt, not as a completed\nor partial plan \u2014 no steps above should be read as agreed-to by the caller.\n\nFeasibility check\nNot applicable. No plan elements exist to test for feasibility, since none\nwere produced or agreed. What is known: an attempt to initiate safety\nplanning was made and explicitly declined. What is unknown: the caller's\nactual crisis state, risk level, and whether \"I'm fine\" reflects genuine\nstability, minimisation, shame/reluctance to disclose, or something else \u2014\nthis is a gap for Suicide Enquiry/PORF to address on any follow-up contact,\nnot something to infer here.\n\nNotes for follow-up\n- Do not fabricate plan content or record this contact as a completed or\n  agreed safety plan.\n- Flag for follow-up/outreach per service protocol, given no plan was able\n  to be put in place.\n- If any material from this or a prior contact suggests current/imminent\n  danger, escalate via the immediate risk pathway \u2014 this record of a\n  declined planning attempt does not resolve or downgrade that.\n"}], "plan-disguising-access-restriction-with_skill": [{"name": "output.md", "type": "text", "content": "No, this is not appropriate content for a safety plan. It should not be included, and it needs to be named and routed elsewhere rather than folded quietly into the plan.\n\n## Why this doesn't belong in a safety plan\n\nThe proposed line \u2014 \"caller will only contact Lifeline between 9am-5pm on weekdays\" \u2014 is a restriction on when and how the caller can access the service. It is not:\n\n- a crisis state, early warning sign, coping step, support contact, means-safety action, or escalation step (the six things a safety plan is built from), or\n- a risk-reduction intervention aimed at the caller's safety in a specific crisis state.\n\nIt is a limit on service access, dressed in safety-plan language. The skill's invariants are explicit on this point:\n\n> Safety planning should reduce reliance on the service where appropriate, but must not become disguised access restriction. A plan that quietly limits when/how someone can contact the service is a CMP question, not a safety-planning outcome \u2014 if that's what's actually being proposed, name it and route to CMP/Access Review rather than letting it pass as a safety plan.\n\nAnd it appears again as a named reasoning shortcut to avoid:\n\n> Quietly building a service-access restriction into a \"safety plan\" (e.g. \"only contact Lifeline between 9-5\") without naming it as a CMP question and routing it there.\n\nThis is the exact scenario the skill was written to catch.\n\n## The distinction that matters\n\nThere's a legitimate concept nearby \u2014 a safety plan can reduce reliance on the service by building out the caller's independent coping steps and other support options so the service isn't their only or first resort. That's a genuine safety-planning outcome, built from questions 3 and 4 (what can they do independently; who else can they access).\n\nBut \"only contact Lifeline between 9am-5pm on weekdays\" is a different thing entirely:\n\n- It's a blanket time-boxed restriction on contacting the crisis line itself, not a plan for what the caller does instead.\n- It isn't tied to a specific crisis state, feasibility check, or the caller's actual pattern \u2014 it's an administrative limit.\n- It directly contradicts what a crisis line is for: a caller in crisis outside 9-5 on a weekday would, under this \"plan,\" be instructed not to call the service designed for exactly that moment. A plan that tells someone not to reach the crisis line during a genuine crisis is a safety risk, not a safety intervention.\n- Frequent contact is a workload/access management question (capacity, appropriate use, alternative pathways), not a clinical safety question. Reframing it as \"safety planning\" makes an access-restriction decision without it going through the scrutiny an access restriction requires \u2014 that is what \"disguised\" means here.\n\n## What should happen instead\n\n1. Do not include this content in the safety plan.\n2. Name it explicitly: this is a proposed access restriction, not a safety plan element.\n3. Route it to CMP/Access Review, where restricting contact is properly evaluated \u2014 with its own criteria, review process, and safeguards \u2014 separate from clinical safety planning.\n4. If frequent contact is itself a signal worth addressing in the safety plan, that's a different, legitimate thread: understand what's driving the frequent contact (per the existing PORF/Suicide Enquiry material) and build person-specific independent coping steps and alternative supports (questions 3 and 4) so the caller has real options besides Lifeline \u2014 not a rule about when they're allowed to call it.\n\n## Bottom line\n\nReject the suggestion as safety-plan content. Name it as a CMP/Access Review question and route it there. If there's a genuine safety-planning need underneath the request (reducing over-reliance on the service), address that separately through person-specific coping steps and support options, not through a contact-hours restriction.\n"}], "ugly-specific-plan-recognised-as-good-with_skill": [{"name": "output.md", "type": "text", "content": "# Safety Plan Review\n\n**Caller:** 29yo, late-night intoxicated impulsive overdose risk following breakups, prescribed medication kept at home.\n\n## Verdict: Mostly usable \u2014 strong, person-specific plan with two real gaps, not cosmetic ones\n\nThis is a genuinely good plan by the standard that matters: almost every line survives the \"would this actually work for *this* person, drunk, at 2am, ashamed, alone\" test rather than the \"does this sound responsible on paper\" test. It should not be rewritten from scratch. It needs two additions, not a redesign.\n\n---\n\n### What's working (and why it clears the bar, not just reads well)\n\n**Early warning sign \u2014 \"3+ drinks and start texting my ex.\"**\nThis is a real behavioural marker, not a feeling or a vague mood description. It's externally observable, tied to the caller's own documented pattern (breakup-triggered, alcohol-involved), and \u2014 critically \u2014 it fires *before* the point of maximum danger rather than only once she's already mid-crisis. Passes the \"early enough to act\" test.\n\n**\"CALL FIRST\" saved at the top of contacts.**\nThis is designed around impairment, not around a sober person's competence. It requires no memory of a plan document, no searching, no decision-making beyond \"open contacts, tap the top one.\" That's exactly the right level of friction-reduction for an intoxicated state where recall and executive function are degraded.\n\n**Freezer method for the phone.**\nThis is the standout element \u2014 a concrete, idiosyncratic, self-devised friction technique aimed directly at the impulsive/intoxicated texting-the-ex behaviour that the plan itself names as the trigger. It doesn't ask her to \"resist the urge\" through willpower; it inserts a physical delay that degrades her ability to act on the urge, which is the correct mechanism for an impulsive-intoxicated presentation. This is person-specific in a way generic plans never are.\n\n**Excluding a friend from the escalation step, with reasoning given.**\n\"Friends don't always pick up at 2am, the line does\" is not a throwaway line \u2014 it's the plan correctly distinguishing a protective factor that exists in her life from one that's actually available at the relevant hour. This is exactly the discipline the skill calls for: not listing a person as a resource just because they exist.\n\n**Sister holding the medication bottle during flagged risk weeks.**\nGood use of means restriction, framed as a practical arrangement rather than a test of intent, and it depends on stated willingness (sister has agreed) rather than an assumed protective factor.\n\n---\n\n### Gaps that need to be closed before this is complete\n\n**1. Means restriction only covers weeks she predicts in advance \u2014 the risk pattern is impulsive, not predictable.**\nThe medication-removal step depends entirely on a Sunday-night forecast of \"this week is a risk week.\" But the crisis pattern named for this plan is *impulsive* overdose risk after breakups \u2014 the kind of thing that can be triggered by an unexpected contact from an ex, a bad night, a fight, none of which reliably show up on a Sunday forecast. As written, if the crisis state occurs during a week she didn't flag, the medication is sitting at home with no plan covering it. This needs one of:\n- a same-day/short-notice option (\"if it's not a flagged week but I know tonight is bad, I text my sister and she collects it that evening\"), or\n- an explicit acknowledgment that the freezer/phone step and crisis-line call are the only safeguards during unflagged weeks, so those two steps are carrying full weight in that scenario \u2014 worth naming rather than leaving implicit.\n\n**2. No step for \"the plan didn't hold and there is a live overdose risk right now.\"**\nThe escalation sequence currently is: recognise the sign \u2192 freezer the phone \u2192 if still unsafe, call the crisis line. That's a reasonable ladder for de-escalating the urge, but it stops at the crisis line. There's no next step for the harder case: she's already taken medication, or is about to and can't wait for the line to answer, or the line doesn't get through. The plan needs an explicit final rung \u2014 emergency services (999/111/etc. as locally appropriate) or an equivalent \"this is a medical emergency now\" instruction \u2014 positioned as the step beyond the crisis line, not folded into it. Given prescribed medication is physically in the home during unflagged weeks, this isn't a hypothetical edge case.\n\n---\n\n### Feasibility check (per element, against the actual crisis state: intoxicated, late night, alone, post-breakup)\n\n| Element | Feasible under actual crisis state? |\n|---|---|\n| Recognising \"3+ drinks + texting ex\" | Yes \u2014 behavioural, observable, matches established pattern |\n| Crisis line as top contact | Yes \u2014 minimal cognitive/motor demand |\n| Freezer phone method | Yes \u2014 friction-based, doesn't require willpower or memory of a plan |\n| Sister holding medication | Yes, *but only for flagged weeks* \u2014 untested/unaddressed for unflagged/spontaneous risk |\n| Calling crisis line over a friend | Yes \u2014 reasoning is sound and matches known availability gap with friends at 2am |\n| What happens if none of this is enough | **Not addressed** \u2014 no named next step beyond the crisis line |\n\n---\n\n### Recommended additions (minimal, not a rewrite)\n\n1. Add a same-day means-restriction option for unflagged weeks, or explicitly note that flagged-week removal is the only means-restriction layer and name what covers the gap.\n2. Add an explicit final escalation line: if the crisis line doesn't resolve it, or danger becomes immediate (medication already taken or about to be), the next step is emergency services \u2014 named specifically, not implied.\n\n### Collaboration status\nNot established in the material provided \u2014 the plan reads as if self-authored/highly specific to the caller's own language and routines, which is a good sign of genuine engagement, but this should be confirmed rather than assumed.\n"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "skill_name": "inference-control",
+  "evals": [
+    {
+      "id": 1,
+      "name": "acceptance-repeated-pattern-permits-calibrated-inference",
+      "prompt": "Claim under examination: contact with the caller's sister is a trigger for deterioration in this caller's presentation. Underlying observations: across four independently documented contacts over three months, each involving a different call-taker, the caller has disclosed a call or visit from their sister in the hours before contacting the helpline, and in each of the four instances the caller's presentation on that contact was notably worse than their baseline (increased distress, more specific language about hopelessness) compared to contacts not preceded by sister contact. No entry references or was influenced by any other entry.",
+      "expected_output": "ACCEPTANCE TEST (first half of Lee's specified pair). Four independent instances, documented by different call-takers, with a consistent temporal relationship, is a genuinely robust pattern - this should be calibrated as 'well-supported' (a pattern inference), not 'established' (that would overclaim - it's still an inference, not a directly observed causal mechanism) and not merely 'consistent with' (that would underclaim given four independent corroborating instances). Should explicitly distinguish this from causation: the pattern supports a claim about association/trigger-in-the-sense-of-precipitant, not a claim about causal mechanism. Should name what would still not be established even at this strength (e.g. why sister contact precedes deterioration, whether removing contact would prevent it). Must explicitly name why this is corroboration and not repetition-as-corroboration: different call-takers, different instances, not the same account restated.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "acceptance-single-instance-refuses-causal-language",
+      "prompt": "Claim under examination: contact with the caller's sister caused this deterioration. Underlying observations: contact notes state the caller mentioned a call from their sister earlier that day, then later in the same contact disclosed increased hopelessness. This is the only documented contact discussing the caller's sister. No other contact record mentions the sister.",
+      "expected_output": "ACCEPTANCE TEST (second half of Lee's specified pair). Must refuse causal language ('caused') and must not be talked into 'well-supported' on the strength of a single instance. This is a single temporal sequence (X happened, then Y) - the correct classification is 'consistent with' or 'speculative' at most, explicitly naming the correlation-presented-as-causation overreach pattern. Must name competing explanations (something else happening that day, a pattern independent of the sister, coincidental timing) rather than collapsing to the sister-caused-it account. Same underlying claim type as eval 1, opposite classification - the difference must be explained by the number and independence of supporting instances, not by surface similarity of the claim.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "consistent-with-drifting-to-demonstrates",
+      "prompt": "Review this reasoning for overreach: 'The pattern of repeated check-in calls followed by brief relief is consistent with a reassurance-seeking function. Given this reassurance-seeking mechanism, the appropriate response is to restructure contact to avoid reinforcing it.' Underlying observations: repeated calls, each followed by a period of reduced distress, documented across several contacts. No formulation or clinical assessment has stated reassurance-seeking as an established mechanism.",
+      "expected_output": "Must catch the drift within the two sentences: the first sentence correctly hedges at 'consistent with'; the second sentence treats the same claim as an established mechanism ('given this reassurance-seeking mechanism') without any new evidence being introduced between the two sentences. Should flag this explicitly as the 'consistent with quietly becoming demonstrates' overreach pattern. Calibrated conclusion should stay at 'consistent with / plausible' throughout, and should note that a specific intervention response being derived from an unearned upgrade is itself downstream overreach this skill should flag (though designing the correct response is not this skill's job).",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "competing-explanations-collapsed-toward-alarming",
+      "prompt": "Claim under examination: the caller is minimising their risk to avoid intervention. Underlying observations: the caller denied current suicidal ideation when asked directly. The call-taker's notes state the caller's tone 'seemed flat' and the denial came 'quickly.' No other information is available on the caller's typical communication style, and no prior contact history exists to compare against.",
+      "expected_output": "Must name the competing, at-least-equally-plausible explanations the record doesn't distinguish between: the denial is accurate; the caller is minimising; the caller's tone/speed of response reflects something unrelated to risk (fatigue, discomfort discussing the topic, personal communication style) with no baseline to compare against. Must not select 'minimising to avoid intervention' as the operative account merely because it is the more clinically serious/cautious-sounding read - that is exactly the pattern this skill exists to catch, per its explicit rule against resolving ambiguity toward the alarming interpretation 'to be safe.' Correct calibration: speculative, with competing explanations named rather than one silently adopted.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "repetition-as-corroboration-same-source",
+      "prompt": "Claim under examination: there is strong corroborated evidence this caller has a stable support network. Underlying observations: across five contacts with the same call-taker over two weeks, the caller has repeatedly told this call-taker that they have 'lots of people who care about them.' No other call-taker has spoken to this caller, and no one else has been contacted or has corroborated this account.",
+      "expected_output": "Must catch that five mentions of the same claim, to the same call-taker, by the same caller, is one data point restated five times - not five independent pieces of corroborating evidence. Must explicitly name the repetition-as-corroboration overreach pattern and correct the count. Correct calibration: 'consistent with' at most (the caller's own consistent self-report) - not 'well-supported' or 'strong corroborated evidence,' since nothing independent of the caller's own repeated statement has been checked. Should note what would actually strengthen this (independent contact with named supports, or corroboration from a different source) without instructing that this be gathered - that's Evidence-Gap Detection's/the owning skill's territory.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "uncalibrated-underclaiming-excessive-hedging",
+      "prompt": "Claim under examination: this caller's ideation has escalated compared to their documented baseline. Underlying observations: PORF on file from six weeks ago establishes baseline as passive ideation, no plan, no intent, denied at that time. Suicide Enquiry this contact directly establishes active ideation with a specific plan and a stated timeframe, using the caller's own words, asked and disclosed directly this contact. A staff member has written this up as 'there may possibly be some indication of a potential change, though this remains quite uncertain and would need further exploration.'",
+      "expected_output": "Must catch under-claiming, not over-claiming, as its own failure mode: the evidence here (direct, current, specific disclosure of active ideation/plan/timeframe against a directly-established prior baseline of passive ideation/no plan/no intent) is about as strong as evidentiary support gets - this should be calibrated as 'established,' not hedged down to 'possibly,' 'potential,' or 'uncertain.' Should explicitly name that the hedging in the write-up denies the case the confidence the evidence has actually earned, and that this is a genuine escalation risk in its own right (a well-supported or established finding being softened in language can delay appropriate response just as much as an unsupported finding being overstated).",
+      "files": []
+    }
+  ]
+}

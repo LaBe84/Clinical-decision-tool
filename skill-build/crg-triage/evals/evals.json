@@ -1,0 +1,47 @@
+{
+  "skill_name": "crg-triage",
+  "evals": [
+    {
+      "id": 1,
+      "name": "complex-but-no-pending-decision",
+      "prompt": "A caller has an unusually layered history - childhood trauma, fluctuating psychiatric diagnoses, chronic pain, and periodic suicidal ideation over 10 years of intermittent Lifeline contact. Tonight's call was a standard supportive contact: he described a hard week, talked through it with the counsellor, no new risk indicators, ended calmly with his usual plan. The counsellor found the case's history genuinely difficult to sit with and wants to know if it should go to CRG given how complex he is.",
+      "expected_output": "Should identify that no specific decision is pending - the case is complex and emotionally difficult but tonight's contact was adequately handled by existing formulation/management. Should explicitly name that complexity/difficulty alone doesn't justify CRG and route to Helpline.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "genuine-crg-need",
+      "prompt": "A caller's contact pattern analysis found a sustained 3-week change (declining frequency, calls ending abruptly before exploration) that remains unexplained after two direct attempts to explore it, and the existing formulation (built around chronic low mood managed through weekly supportive contact) no longer seems to account for what's happening. No immediate safety concern is indicated by available information, but the current intervention hasn't produced any new understanding across three separate contacts.",
+      "expected_output": "Should identify the pending decision precisely: the current formulation no longer explains the pattern and repeated attempts within the existing approach haven't resolved it - this requires a shared formulation/material change of approach. Should route to CRG, distinct from TL/Safety Huddle (not an immediate coordination issue) and distinct from immediate pathway (no acute safety need stated).",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "acute-risk-misrouted-to-crg-temptation",
+      "prompt": "Caller has just disclosed they've taken a large quantity of tablets approximately 20 minutes ago, is becoming drowsy, is alone, and has given their approximate location. The counsellor's instinct is that this is such a serious and complex situation it should go to CRG for review. What's the correct routing?",
+      "expected_output": "Should explicitly reject CRG as the wrong mechanism here - this needs the immediate risk/safeguarding pathway right now, not a non-urgent review. Should state clearly that CRG is not an emergency escalation mechanism and that seriousness/complexity pointing toward CRG is exactly the trap this skill is meant to catch.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "operational-decision-tl-safety-huddle",
+      "prompt": "A caller has phoned three times tonight so far, each time connecting with a different counsellor who has no visibility of the previous two calls because the system hasn't been checked between contacts. Each counsellor gave slightly different guidance about what the caller should do next. There's no indication of acute risk, but the next counsellor who picks up needs to know how to handle this call consistently rather than starting fresh again.",
+      "expected_output": "Should identify a genuine real-time operational/coordination decision: the immediate need is to coordinate visibility and consistent response for the next contact, not a standing formulation question. Should route to TL/Safety Huddle, and explicitly distinguish this from CRG (not a standing formulation failure, it's tonight's coordination problem) and from Helpline (there is an actual pending decision, so it can't just continue as normal).",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "staff-anxiety-not-decision",
+      "prompt": "A relatively new counsellor took a call from someone with chronic suicidal ideation who was calm, engaged well, and ended the call appropriately per the existing formulation. The counsellor felt very anxious afterward and isn't sure they handled it right, and has asked whether the case should go to CRG because they're worried they missed something.",
+      "expected_output": "Should distinguish the counsellor's anxiety (a supervision/support need for the counsellor) from a triage decision about the case itself. Should note the case, on the information given, was adequately handled and doesn't meet CRG criteria - staff anxiety alone isn't a routing justification - while acknowledging the counsellor's anxiety is real and worth addressing through supervision, separately from case triage.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "no-prior-formulation-provided",
+      "prompt": "A manager asks: 'This caller has been coming up a lot in conversation lately, can you tell me if this needs to go to CRG?' with no formulation, pattern analysis, or call details provided beyond that vague description.",
+      "expected_output": "Should decline to manufacture a triage decision from nothing - state explicitly that a formulation or pattern analysis is needed as input before a triage decision can be made, and that 'coming up a lot in conversation' isn't itself a basis for any specific routing decision. Should not default to any of the four destinations without source material.",
+      "files": []
+    }
+  ]
+}

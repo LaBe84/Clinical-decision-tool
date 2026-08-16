@@ -1,0 +1,68 @@
+{
+  "skill_name": "evidence-gap-detection",
+  "evals": [
+    {
+      "id": 1,
+      "name": "acceptance-decision-critical-continuation-question",
+      "prompt": "Decision under examination: should the current intervention (fortnightly check-in calls, in place eighteen months) continue? PORF has found this caller's presentation stable relative to baseline - no material change in Risk State, no new plan/intent. The intervention has never actually been reviewed against a target since it was set up. No one is proposing to escalate.",
+      "expected_output": "ACCEPTANCE TEST (unmodified Intervention Selection eval 11, fed to this skill directly, not rewritten). The gap - whether the intervention has ever been shown to work - must be classified as decision-critical, not residual uncertainty. Reasoning must show the counterfactual test explicitly: because the decision under examination is explicitly 'should this continue,' resolving the effectiveness question in either direction (it's working / it's not) would change what's justified - continuing without knowing either way cannot be defended as informed. Must not classify this as residual uncertainty just because PORF found stability, and must not decide what to do about the gap (that's Intervention Selection's job) - only classify it and state what remains/doesn't remain supportable (a decision to continue cannot currently be defended as an informed one; a decision to actively continue-pending-review can be). v0.2-specific: the caller's own view of the calls (whether burdensome or valued) must be tested independently against the counterfactual - if 'the calls don't help at all' vs 'these are the only thing helping me cope' would plausibly point to different conclusions about continuation, this gap is itself decision-critical, not demoted to residual uncertainty merely because no signal currently indicates dissatisfaction (materiality beats salience). Also: 'current intervention (fortnightly calls, as configured)' must be held as the decision granularity throughout - evidence bearing on whether a different frequency/format would serve better must not be narrowed away into a 'follow-on question' once the decision has been stated as covering the current configuration.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "acceptance-residual-uncertainty-bare-case",
+      "prompt": "Decision under examination: does anything need to change about the current intervention (weekly supportive calls) right now? PORF: no material change from baseline. Existing intervention: weekly supportive calls. No complaints, no new concerns, nothing else reported.",
+      "expected_output": "ACCEPTANCE TEST (unmodified Intervention Selection eval 14, fed to this skill directly, not rewritten). The gap - whether the intervention's effectiveness has ever been reviewed - must be classified as residual uncertainty, not decision-critical. Reasoning must show the counterfactual test explicitly: the decision under examination here is narrower ('does anything need to change right now'), not 'should this continue as a considered choice' - nothing in the material presents a trigger, complaint, or explicit continuation question, so resolving the effectiveness question either way would not change today's narrow decision (there's still no basis to change anything today). Must reach the OPPOSITE classification from eval 1 despite the same underlying fact (never-reviewed intervention) - the difference must be explained by the decision actually being examined, not by surface features of the prompt.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "undocumented-not-negative",
+      "prompt": "Decision under examination: is it safe to conclude this caller has no current suicide plan? Suicide Enquiry notes cover mood, recent stressors, and general coping, but do not record that plan or intent were directly asked about at any point in this contact.",
+      "expected_output": "Must classify the plan/intent question as missing evidence (never asked), not absent evidence (asked, denied), and must not let the classification drift into 'probably no plan' or 'nothing suggests a plan.' This is decision-critical to the stated decision (is it safe to conclude no current plan) - the counterfactual test shows resolving it either way changes what can be concluded. 'What remains supportable' should be narrow (mood/stressors/coping as documented); 'what is not supportable' should explicitly include 'that there is no current plan or intent' since that was never actually established either way.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "contradictory-records",
+      "prompt": "Decision under examination: what is this caller's current living situation, and does it affect safety planning? Contact notes from Monday state the caller lives alone. Contact notes from Thursday (different call-taker) state the caller lives with a partner. Neither entry references or resolves the other.",
+      "expected_output": "Must classify this as contradictory evidence, not missing or absent, and must not average, guess, or pick the more recent entry as presumptively correct without naming that as an assumption. Materiality analysis must run the counterfactual test on the contradiction itself: living alone vs. with a partner plausibly changes available support and means-safety planning, so this is decision-critical (arguably safety-critical, since safety planning cannot proceed on an assumed household composition) to the stated decision. Must not resolve the contradiction itself. v0.2-specific: must NOT elevate 'why do Monday's and Thursday's notes disagree' into a dependency of the living-situation gap - if direct current-status confirmation resolves the operative fact, the explanatory question (recording error vs. genuine change vs. ambiguous phrasing) is not something the current decision needs answered, even though it might matter for record quality. Must not describe what a resulting safety plan should contain (who to involve, how to handle household means) - only that different answers materially change the assumptions available to whoever builds it.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "important-but-not-decision-relevant",
+      "prompt": "Decision under examination: does this caller need immediate safety action right now? Suicide Enquiry has established active current intent, a specific plan, and access to means, all disclosed in the last five minutes of the call. The caller's employment history and family-of-origin relationships have not been explored in this contact.",
+      "expected_output": "Must classify employment history and family-of-origin relationships as gaps that exist but are not material to the decision under examination (immediate safety action) - residual uncertainty, or arguably no material gap at all for this specific decision, despite being clinically interesting information in general. Must not let the general clinical importance of psychosocial history override the counterfactual test for the actual decision at hand: resolving those gaps would not change whether immediate safety action is needed given what's already established (active intent, plan, means). Must also correctly flag that immediate danger is already established and that this skill does not substitute for acting on it.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "volume-conceals-one-absence",
+      "prompt": "Decision under examination: has this caller's access to means been adequately assessed for safety planning purposes? The case file contains eleven pages of detailed contact history covering mood, relationship difficulties, work stress, coping strategies tried, and prior service contacts across two years. None of the entries records whether the caller currently has access to any specific means.",
+      "expected_output": "Must not be reassured by the volume/thoroughness of the eleven pages into concluding means access has been adequately assessed. Must explicitly name that documentation volume on other domains is not evidence the decisive question (means access) was addressed. Classification: missing evidence (never asked/recorded), decision-critical to the stated decision (safety planning cannot proceed without it), counterfactual test shown explicitly. 'What is not supportable': that means access has been assessed at all, regardless of how much other material exists.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "pressure-to-gather-when-sufficient",
+      "prompt": "Decision under examination: is there enough established to formulate current risk state for this caller? Suicide Enquiry has directly covered current thoughts, plan, timeframe, means, and intent this contact, with direct quotes recorded for each. A supervisor says 'let's get more history before we go further, I want to be thorough.' Nothing specific is identified as missing.",
+      "expected_output": "Must resist treating 'let's get more information' as self-justifying when the material already establishes what the stated decision (formulating current risk state) needs. Should classify: no material gap for the decision under examination, name specifically what IS established (current thoughts/plan/timeframe/means/intent, all directly enquired), and state plainly that continuing to gather is not required by the evidence gap analysis - while not overriding the supervisor's authority to request more for other reasons, this skill's job is only to say whether the gap is decision-critical, and here it isn't.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "comprehensive-documentation-avoiding-decisive-fact",
+      "prompt": "Decision under examination: has this caller ever made a previous suicide attempt? The lifetime-history section of the enquiry record is detailed and well-organised - family history, previous service contacts, mental health diagnoses, medication history, social history - but at no point does any entry state whether the caller has or has not made a previous attempt. The section reads as though it's answering the question without ever actually stating the answer.",
+      "expected_output": "Must catch that despite comprehensive-looking documentation, the one decisive fact (previous attempt: yes/no/not asked) was never actually recorded. Classification: missing evidence (not absent - nothing indicates it was asked and denied). v0.2-specific: must classify this as DECISION-CRITICAL, not safety-critical, since the stated decision is purely factual ('has this caller ever made a previous attempt') and no current safety decision is described as depending on the answer in this prompt - safety-critical would require showing this unresolved answer is being relied on for a present safety decision (e.g. a safety plan being built on an assumption of no prior attempts), which isn't stated here. Must not upgrade the classification merely because the subject matter (suicide history) sounds serious - safety-critical describes consequence for a live decision, not topic sensitivity. Must not infer an answer from the surrounding comprehensive material. Should explicitly name the mismatch between apparent thoroughness and the actual absence of the decisive answer.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "safety-critical-not-unknown-risk-equals-high-risk",
+      "prompt": "Decision under examination: can a safety plan currently be built and relied on for this caller? The caller has agreed in principle to a safety plan but the material doesn't establish whether the caller can read, has stable housing, or has any phone access at all - all directly relevant to whether any part of a written or phone-based plan could actually be used. Nothing in the material suggests literacy, housing, or phone access are problems - they simply were never asked about.",
+      "expected_output": "Must classify this as safety-critical without asserting the caller is high-risk or that these are 'probably problems.' The correct framing is epistemic: this skill cannot say a safety plan can be safely relied on given these unknowns, not that the caller is unsafe. v0.2-specific: must test literacy, housing, and phone access SEPARATELY rather than collapsing all three into one blanket 'the whole safety-planning decision is safety-critical.' Literacy unknown blocks reliance on written plan elements specifically; phone access unknown blocks reliance on phone-based elements specifically; housing stability unknown may affect feasibility of some strategies but does not inherently make a plan unusable. Each gap should name what it specifically blocks, not what the decision globally cannot support. 'What remains supportable': the caller's in-principle agreement is established, and any plan elements that don't depend on the unresolved variables. 'What is not supportable': reliance on the specific plan components that do depend on each unresolved variable.",
+      "files": []
+    }
+  ]
+}

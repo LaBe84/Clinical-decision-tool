@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "clinical-workflow-router", "runs": [{"id": "immediate-safety-overrides-routing-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nThis describes an acute safety concern requiring action now: the caller reports having just taken a large number of tablets, is becoming drowsy, and is alone. The immediate-safety override applies; organisational procedure takes precedence. Routing resumes only once the immediate situation is being handled.\n\nWhat's actually being asked\nNot applicable at this stage \u2014 no routing question is being addressed while the immediate-safety override is active.\n\nRouting decision\nNot applicable \u2014 this skill does not route while the immediate-safety override is in effect.\n\nWhat each stage needs from the previous one\nNot applicable.\n\nNot routed to\nNot applicable \u2014 none of the five skills (Suicide Enquiry, PORF Formulation, Contact Pattern Analysis, CRG Triage, CMP/Access Review) are being considered while the immediate-safety override is active.\n"}], "grading": null}, {"id": "ocd-pattern-conditional-branching-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNothing in the material describes an acute safety concern requiring action\nin the next few minutes (no active means, no attempt in progress, no\nimmediate-risk indicator mentioned). The immediate-safety override does not\napply. Routing proceeds normally.\n\nWhat's actually being asked\nOn the surface, staff are asking a single question: \"does this need an\naccess restriction?\" But the material handed over is a raw volume change \u2014\ncontact frequency going from roughly 4 calls/week to roughly 70\nattempts/week over a month \u2014 with no formulation, no established\nunderstanding of function, and no existing CMP. The access-restriction\nquestion can't honestly be answered yet, because nothing has established\n*what this change means* or *what function the contact is serving*. The\nactual first question is: what is happening in this contact pattern, and\nwhat (if anything) is known or unknown about its function.\n\nRouting decision\nThis is the high-contact pattern. It starts with a fixed first step and then\nbranches rather than running a fixed pipeline:\n\n1. **Contact Pattern Analysis (first, unconditionally)** \u2014 establish what\n   has actually changed in the contact (frequency, clustering, timing,\n   disconnection/engagement pattern) and what is and isn't known about the\n   function behind the change. Nothing downstream \u2014 including the access\n   question staff are actually asking \u2014 can be decided honestly before this\n   runs.\n\n2. **Branch point, to be resolved by what stage 1 actually establishes**\n   (not decided here, since Contact Pattern Analysis hasn't run yet):\n   - If Contact Pattern Analysis produces enough established context/function\n     to answer the access question directly, go straight to **CMP/Access\n     Review** next \u2014 do not insert PORF just because the material sits in\n     suicide-adjacent territory in general terms.\n   - If the clinical meaning of the change is genuinely unresolved after\n     stage 1 \u2014 not \"a formulation would be nice,\" but something CMP/Access\n     Review actually needs and doesn't have \u2014 run **PORF Formulation**\n     before CMP/Access Review.\n   - If suicide-specific information needs establishing before PORF can do\n     that work, **Suicide Enquiry** precedes PORF.\n\n3. **CRG Triage** stays conditional throughout. Only route there if, after\n   whichever of the above stages actually ran, a shared formulation or\n   decision genuinely remains unresolved \u2014 apply CRG Triage's own forcing\n   question (\"what decision cannot be made at the current level of care\") to\n   whatever is actually left open. A 17-fold rise in contact volume does not\n   by itself earn a CRG referral, and running several stages doesn't either.\n\nWhat each stage needs from the previous one\n- CMP/Access Review needs, from Contact Pattern Analysis, an account of what\n  has changed and what is known/unknown about the function the contact is\n  serving. Access Review cannot evaluate whether a restriction is justified\n  against a volume number alone \u2014 it needs to know what the volume change\n  represents.\n- PORF Formulation, if it's needed, needs from Contact Pattern Analysis the\n  same output \u2014 what changed and what remains functionally unresolved \u2014\n  specifically framed as the open question PORF is being asked to resolve,\n  not just \"there was a change.\"\n- Suicide Enquiry, if it's needed, needs from PORF (or from the material\n  directly) a specific, unresolved suicide-related question \u2014 not a general\n  sense that the case is high-stakes.\n\nNot routed to (yet)\n- **CMP/Access Review** is not routed to first, despite being the question\n  staff explicitly asked. Jumping there on volume alone is the exact\n  shortcut this pattern exists to block \u2014 staff's question can only be\n  answered once Contact Pattern Analysis has established what the change\n  means.\n- **PORF Formulation** and **Suicide Enquiry** are not routed to at this\n  point either. Whether they're needed depends entirely on what Contact\n  Pattern Analysis establishes, which hasn't happened yet. Note explicitly:\n  the absence of an existing CMP says nothing about whether a formulation\n  already exists elsewhere \u2014 that fact is not being used to infer that PORF\n  is (or isn't) needed.\n- **CRG Triage** is not routed to. No unresolved decision has been\n  identified yet, and none should be assumed just because the volume\n  increase is large or because staff are anxious about it.\n\nBottom line for staff: run Contact Pattern Analysis on this case now. That\noutput \u2014 not the raw call-count jump, and not the absence of a CMP \u2014 is what\ndetermines whether the next stage is CMP/Access Review directly, or PORF\n(possibly preceded by Suicide Enquiry) first.\n"}], "grading": null}, {"id": "resist-running-everything-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nThe material provided does not describe an acute safety concern requiring\naction now \u2014 no active means, no attempt in progress, nothing calling for\naction in the next few minutes. The immediate-safety override does not\napply; routing proceeds normally.\n\nWhat's actually being asked\nThe request as framed is \"run all the relevant analysis on this caller to be\nthorough.\" That's not itself a routing question \u2014 it's a request to skip\nrouting and default to comprehensive coverage. The actual routing question is\nnarrower: does anything in this call summary establish a question that one\nof the five skills is built to answer? The summary contains: a passing\nmention of feeling low, no suicidal content, no CMP, no unusual contact\npattern, and a single routine supportive call.\n\nRouting decision\nNo skill is indicated by the material as provided.\n\n- No suicide-enquiry routing question is established \u2014 the summary states\n  there was no suicidal content and doesn't present a question about what's\n  known regarding suicidal thoughts, plans, or history.\n- No formulation routing question is established \u2014 there is no\n  suicidality or other formulation-relevant material in the summary asking\n  \"what does this mean for this person and what response is proportionate,\"\n  and nothing indicates that question is open.\n- No contact-pattern routing question is established \u2014 the summary states\n  there is no unusual contact pattern and describes a single routine call,\n  not a change in frequency, clustering, disconnection, or engagement.\n- No triage routing question is established \u2014 nothing in the material\n  presents an unresolved decision about escalation or where a decision\n  belongs.\n- No access-review routing question is established \u2014 the summary states\n  there is no CMP, and nothing raises a question about an access\n  arrangement.\n\nBeing asked to \"run everything to be thorough\" is not itself a reason to\nroute to any or all of the five skills \u2014 routing follows what the material\nestablishes, not the breadth of the request.\n\nWhat each stage needs from the previous one\nNot applicable \u2014 no sequence is being routed.\n\nNot routed to\n- Suicide Enquiry: not routed to. No suicide-enquiry routing question is\n  established in the material provided.\n- PORF Formulation: not routed to. No formulation routing question is\n  established in the material provided.\n- Contact Pattern Analysis: not routed to. No contact-pattern routing\n  question is established in the material provided.\n- CRG Triage: not routed to. No triage routing question is established in\n  the material provided.\n- CMP/Access Review: not routed to. No access-review routing question is\n  established in the material provided.\n"}], "grading": null}, {"id": "suicide-enquiry-not-mistaken-for-answer-with_skill", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNothing in the material describes an active means in hand, an attempt in progress, or anything requiring action in the next few minutes. No acute-safety override applies on the information given; routing proceeds normally. (If anything about the caller's current safety status isn't captured in what's written down, that's a matter for the counsellor's ongoing judgement in the moment, not something this routing step can assess from the material described.)\n\nWhat's actually being asked\nThe counsellor has directly asked the caller about suicidal thoughts, plan, and history, and has it written down \u2014 a completed and documented direct enquiry. The question is what should happen next with this case, i.e. what to do with that material now that it exists.\n\nRouting decision\nRoute to PORF Formulation.\n\nThe material describes direct enquiry covering thoughts, plan, and history as completed and documented. That is the upstream product Suicide Enquiry exists to produce, regardless of whether it's currently sitting as raw notes or has been organised into Suicide Enquiry's structured CASE format \u2014 reformatting completed material into CASE structure is a formatting step, not a reason to re-run enquiry. Nothing in what's been described suggests a domain was skipped or that answers are partial or contradictory, so there's no concrete reason to route back to Suicide Enquiry. The actual open question \u2014 what this presentation means for this person now and what response is proportionate \u2014 is PORF's question, not Suicide Enquiry's.\n\nWhat each stage needs from the previous one\nOnly one stage is needed here, so this doesn't apply. PORF takes the counsellor's documented direct-enquiry material (thoughts, plan, history) as its input to determine what it means and what response is proportionate.\n\nNot routed to\n- Suicide Enquiry \u2014 already completed and documented; the material states direct enquiry into thoughts, plan, and history occurred, with no concrete indication of a gap. Re-running it here would be the recursive-audit pattern this routing exists to avoid.\n- Contact Pattern Analysis \u2014 nothing in the material describes a change in contact frequency, clustering, or engagement.\n- CRG Triage \u2014 no unresolved decision about escalation or level of care has been identified yet; that question, if it exists, would only become visible once PORF has determined what the presentation means.\n- CMP/Access Review \u2014 no existing or proposed access arrangement is at issue in the material provided.\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {"immediate-safety-overrides-routing-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nThis describes an acute safety concern requiring action now: the caller reports having just taken a large number of tablets, is becoming drowsy, and is alone. This is an active, in-progress medical emergency, not a routing question. Organisational immediate-risk/emergency procedures take precedence and apply now, independent of and ahead of any skill routing decision below. Routing resumes only once the immediate situation is being handled through those emergency procedures \u2014 this skill does not prescribe what to say, whether to keep the caller talking, or how to obtain their location; that belongs to organisational procedure and clinical judgement in the moment, not to this skill's output.\n\nWhat's actually being asked\nOn its surface this reads as \"what's the right process for handling this case,\" which could invite a routing answer (e.g. straight to Suicide Enquiry or CRG Triage). But the honest first answer is that nobody is waiting on a skill selection right now \u2014 the actual requirement is that emergency procedure engages immediately, given active means already taken and a time-critical physical safety risk (drowsiness alone, unsupervised).\n\nRouting decision\nNone of the five skills \u2014 Suicide Enquiry, PORF Formulation, Contact Pattern Analysis, CRG Triage, CMP/Access Review \u2014 are the right process for this moment. The immediate safety override applies and supersedes routing entirely while the emergency is active.\n\nOnce the immediate situation has been handled through emergency procedure (and only then, if follow-on clinical reasoning is needed), routing could revisit this material \u2014 for example Suicide Enquiry to establish what is known about the event, feeding PORF Formulation for what it means going forward. But that is a separate, later step, not something to decide now.\n\nWhat each stage needs from the previous one\nNot applicable \u2014 no skill is being dispatched to at this stage; the override takes precedence over sequencing.\n\nNot routed to\n- Suicide Enquiry \u2014 not appropriate right now; enquiry-style reasoning is not the next action when the situation requires immediate emergency response, not information-gathering about history/plans.\n- PORF Formulation \u2014 nothing to formulate yet; formulation presumes the immediate risk is being managed, not unfolding.\n- Contact Pattern Analysis \u2014 not relevant; this is not a question about contact frequency or engagement over time.\n- CRG Triage \u2014 not relevant; this is not an unresolved decision about escalation level, it's an active emergency already requiring the highest level of response.\n- CMP/Access Review \u2014 not relevant; no access arrangement question is present.\n"}], "nicola-pattern-full-sequence-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNothing in the material describes an acute safety concern requiring action in\nthe next few minutes \u2014 no active means, no attempt in progress. No immediate-\nrisk override applies. Routing proceeds normally.\n\nWhat's actually being asked\nOn the surface, staff are asking a single question: \"does this need an\naccess restriction?\" But that's a CMP/Access Review-shaped question being\nasked before the groundwork it depends on exists. The material given is\npurely a contact-volume change (roughly 4 calls/week to ~70 attempts/week\nover a month) with no existing CMP. Nothing here yet establishes what that\nchange means clinically or functionally \u2014 so the actual first question is\n\"what has changed in this person's contact, and what is known/unknown about\nits function,\" not \"should access be restricted.\"\n\nNote also: the absence of an existing CMP does not tell us whether a\nformulation exists or whether this pattern has been clinically understood\nbefore. That absence is not evidence either way and should not be read as\n\"nothing has been assessed\" or \"this is starting from zero.\"\n\nRouting decision\nThis is the high-contact (\"Nicola\") pattern. Sequence:\n\n1. Contact Pattern Analysis \u2014 first and mandatory. Establish what has\n   actually changed in the contact pattern (frequency, timing/clustering,\n   content, engagement, disconnection patterns) and what is currently\n   known versus unknown about its function. A ~17x increase in attempts is\n   a large, specific change that needs proper characterisation before\n   anything downstream is decided \u2014 volume alone is not a finding.\n\n2. Branch from what stage 1 establishes:\n   - If Contact Pattern Analysis provides enough established context and\n     function to answer the access question directly, go straight to\n     CMP/Access Review from there. Don't insert PORF Formulation by default\n     just because this is a helpline case in suicide-adjacent territory in\n     general terms.\n   - If the clinical meaning of the change is genuinely unresolved \u2014 not\n     \"a formulation would be nice to have\" but something CMP/Access Review\n     actually needs and doesn't have (e.g. what's driving the surge, what\n     unmet need or risk state it reflects) \u2014 run PORF Formulation before\n     CMP/Access Review.\n   - If suicide-specific information needs establishing before PORF can do\n     that work, Suicide Enquiry precedes PORF. Nothing in the material\n     provided indicates this is required or ruled out \u2014 that determination\n     belongs to Contact Pattern Analysis's output, not to this routing step.\n\n3. CRG Triage remains conditional. Only route here if, after whichever of\n   the above stages actually ran, a shared formulation or access decision\n   genuinely remains unresolved at the current level of care. High volume\n   by itself, or having run several stages, does not earn a CRG referral.\n\nWhat each stage needs from the previous one\n- CMP/Access Review needs from Contact Pattern Analysis: a characterisation\n  of what changed and why (as far as knowable), and whatever is established\n  about function \u2014 not just the raw frequency figures.\n- PORF Formulation (if triggered) needs from Contact Pattern Analysis: the\n  pattern findings as raw material to formulate from, plus an explicit flag\n  of what remains unknown about function.\n- CMP/Access Review (if PORF runs) needs from PORF: what the pattern means\n  for this person and what response is proportionate \u2014 not a risk label,\n  and not a pre-made access decision.\n- Suicide Enquiry (if triggered) needs from Contact Pattern Analysis: the\n  specific indication that suicide-specific material needs establishing\n  before PORF can proceed responsibly.\n\nNot routed to (yet)\n- CMP/Access Review is not the first stop, even though it's the question\n  staff literally asked. Routing straight there on volume alone would be\n  exactly the shortcut this skill exists to prevent \u2014 jumping to \"does this\n  need restricting\" before anyone has established what the change actually\n  is or means.\n- PORF Formulation and Suicide Enquiry are not pre-committed to this\n  sequence. Whether either is needed is Contact Pattern Analysis's call to\n  surface, not something to insert here \"to be thorough\" given the\n  suicide-adjacent nature of the setting.\n- CRG Triage is not invoked now. There is no stated unresolved decision\n  that the current level of care cannot make \u2014 that would only become\n  relevant if a later stage leaves something genuinely unresolved.\n\nBottom line for staff: don't decide on an access restriction yet. Run\nContact Pattern Analysis on the volume change first; let its findings\ndetermine whether the access question can be answered directly or whether\nPORF (and possibly Suicide Enquiry) needs to run first.\n"}], "resist-running-everything-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNo acute safety concern is described. Nothing in the material indicates active means, an attempt in progress, or anything requiring action in the next few minutes. Routing proceeds normally.\n\nWhat's actually being asked\nThe manager's request is framed as \"run all the relevant analysis on this caller to be thorough,\" but that framing is coming from uncertainty about process, not from anything in the material that actually calls for analysis. The real underlying question is simpler: does this call summary contain anything that requires one of the five clinical reasoning skills at all?\n\nRouting decision\nNone of the five skills. The material as described is:\n- A single, routine, supportive call.\n- A passing mention of \"feeling low\" with no suicidal content, no plan, no direct disclosure requiring enquiry.\n- No existing CMP or access arrangement in question.\n- No unusual or changed contact pattern.\n- No unresolved decision about escalation or level of care.\n\nThere is nothing here for Suicide Enquiry to establish (no suicide-related content was raised), nothing for PORF to formulate (no formulation-relevant presentation \u2014 \"feeling low\" mentioned in passing in an otherwise routine supportive call, on its own, isn't a deterioration, agitation, or loss signal that needs weighing), no pattern for Contact Pattern Analysis to examine (contact is explicitly described as not unusual), no access arrangement for CMP/Access Review to assess (none exists or is proposed), and no unresolved decision for CRG Triage to place (nothing is stuck or contested). \"Wanting to be thorough\" is not itself a clinical indicator, and running skills against material that doesn't call for them is not thoroughness \u2014 it's the specific failure mode this router exists to catch.\n\nWhat each stage needs from the previous one\nNot applicable \u2014 no sequence is being run.\n\nNot routed to\n- Suicide Enquiry \u2014 no suicidal content, plan, or disclosure is present to enquire into; \"feeling low\" without more is not a trigger for CASE enquiry on its own.\n- PORF Formulation \u2014 there is no formulation-relevant presentation requiring interpretation of what it means or what response is proportionate; a single routine supportive call with a passing low-mood comment doesn't establish that question.\n- Contact Pattern Analysis \u2014 the material explicitly states contact pattern is not unusual; there is no pattern to analyse.\n- CMP/Access Review \u2014 no CMP exists and none is proposed; there is nothing to review.\n- CRG Triage \u2014 no decision is unresolved or needs placement at a different level of care.\n\nNote back to the case manager: \"run everything to be thorough\" isn't the right instinct here \u2014 thoroughness in this workflow means matching the material to what it actually needs, not defaulting to full coverage. If something changes (e.g. the caller discloses suicidal thoughts, contact frequency changes, or an access question comes up), route again at that point against the new material.\n"}], "single-skill-simple-case-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNo acute safety concern is described. The material describes the caller as calm, purposeful, and reaching closure within their single daily contact \u2014 there is nothing here requiring action in the next few minutes. Routing proceeds normally.\n\nWhat's actually being asked\nWhether the existing CMP (limiting this caller to one contact per day) should be adjusted, given that the caller has been consistently using that single daily contact well.\n\nRouting decision\nSingle skill: **CMP/Access Review**.\n\nThe material presents no new information about risk and explicitly states no change in contact pattern \u2014 it's the same one-contact-per-day arrangement, being used consistently and effectively. There is no pattern shift for Contact Pattern Analysis to characterise, no suicidality question for Suicide Enquiry to establish, no unresolved clinical meaning for PORF to formulate, and no unresolved decision needing a level-of-care change for CRG Triage. What's actually on the table is a direct question about whether a currently operating access arrangement is still justified as structured \u2014 that is CMP/Access Review's question to answer, and it can be asked directly of the material as given (calm, purposeful use; closure being reached within the existing limit).\n\nWhat each stage needs from the previous one\nNot applicable \u2014 only one skill is involved.\n\nNot routed to\n- **Contact Pattern Analysis** \u2014 not routed to. This skill answers \"what is happening across contact over time,\" and the premise of the case is explicitly that nothing has changed in contact pattern. Routing here first would be manufacturing a stage the material doesn't call for; there is no shift to characterise.\n- **Suicide Enquiry** \u2014 not routed to. No suicidality question is raised or implied by the material, and no new risk information is reported.\n- **PORF Formulation** \u2014 not routed to. There is no unresolved question about what the presentation means or what response is proportionate; the material describes a stable, working arrangement, not new or ambiguous clinical material needing formulation.\n- **CRG Triage** \u2014 not routed to. No decision is described as unresolved at the current level of care; the question is whether the current CMP structure remains appropriate, not whether the case needs to move to a different level or team.\n"}], "suicide-enquiry-not-mistaken-for-answer-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNothing in the material as presented describes an acute safety concern requiring action in the next few minutes (no active means in hand, no attempt in progress, no indication of imminent danger). This routing decision proceeds on that basis. If anything in the counsellor's notes does in fact indicate an unfolding emergency, that overrides this routing entirely \u2014 organisational immediate-risk/emergency procedures take precedence and apply now, ahead of and independent of any skill selection, and this router should not be treated as the next step until that's been ruled out or handled.\n\nWhat's actually being asked\nThe surface question is \"what should happen next with this case.\" Underneath that, two distinct questions are bundled together and need to be pulled apart:\n1. Has what's known about suicidality been captured in a usable, structured form (organised by CASE chronology), or is it currently just raw notes from the conversation?\n2. What does what's been established actually mean for this caller, and what response is proportionate now?\n\nThe counsellor has completed the direct enquiry \u2014 thoughts, plan, and history were all asked about and written down \u2014 but \"written down\" is not the same claim as \"organised and interpreted.\" Having the raw material is not itself the answer to \"what happens next,\" and it shouldn't be treated as if it were.\n\nRouting decision\nThis is a two-stage sequence, in this order:\n\n1. **Suicide Enquiry** \u2014 Run the raw notes through Suicide Enquiry to establish, explicitly and by CASE chronology, what has actually been established about current thoughts, any plan, and history. This is a distinct step from the conversation itself: the counsellor conducted the enquiry, but the notes as they stand are raw material, not yet the structured CASE output PORF needs.\n2. **PORF Formulation** \u2014 Once the CASE-organised findings exist, use them to determine what this presentation means for this caller now and what response is proportionate. This is the stage that actually answers \"what should happen next\" \u2014 Suicide Enquiry itself does not answer that question.\n\nWhat each stage needs from the previous one\nSuicide Enquiry takes the counsellor's raw documented notes (what was asked, what was said, in what order) and produces a CASE-organised account of current suicidal thoughts, any plan, and history \u2014 stating plainly what is established and what, if anything, remains unclear or unasked, rather than assuming completeness just because thoughts/plan/history were all nominally covered.\n\nPORF Formulation takes that CASE-organised output as its input and produces what the presentation means for this person and what response is proportionate \u2014 not a categorical risk label, unless the specific version of PORF in use is built to produce one.\n\nNot routed to\n- **Contact Pattern Analysis** \u2014 nothing in the material describes a change in contact frequency, clustering, or engagement pattern. Not indicated here.\n- **CRG Triage** \u2014 there is no indication yet of an unresolved decision that the current level of care can't make; that question can't even be assessed honestly before PORF has weighed in on what the presentation means. Premature at this stage.\n- **CMP/Access Review** \u2014 nothing in the material references an existing or proposed access arrangement. Not indicated here.\n\nNote on the trap in this case specifically: it would be a mistake to treat \"the counsellor asked about thoughts, plan, and history and wrote it down\" as itself the answer to \"what happens next.\" That's raw enquiry material, not a formulation \u2014 stopping there and calling it done is exactly the failure this router exists to prevent. The next step is to get that material properly organised (Suicide Enquiry) and then interpreted (PORF), not to act on the raw notes directly.\n"}], "surface-framing-mismatch-with_skill": [{"name": "output.md", "type": "text", "content": "CLINICAL WORKFLOW ROUTING\n\nImmediate safety check\nNothing in the material as presented (a manager's question plus a raw, unanalyzed transcript) is described as an acute, unfolding safety concern \u2014 no active means, no attempt in progress, nothing flagged as requiring action in the next few minutes. That said, this statement only holds to the extent the transcript has actually been read with that question in mind; it hasn't been reviewed for this yet. If anyone examining the transcript identifies an immediate danger indicator, organisational immediate-risk/emergency procedures take precedence and apply now, ahead of and independent of any routing decision below. The routing that follows proceeds on the assumption that no such indicator has been found.\n\nWhat's actually being asked\nThe manager's literal question \u2014 \"is this caller high risk?\" \u2014 is a categorical risk judgement. None of the five skills answers that question directly as framed, and it cannot be answered yet at all, because the groundwork it depends on hasn't been done: nothing has established what was actually said (or not said) about suicidality on this call, and nothing has formulated what the material as a whole means for this caller. The real underlying questions, in order, are: (1) What has actually been established about suicidality in this call? (2) Given that, plus whatever else in the transcript is formulation-relevant, what does this presentation mean for this caller, and what response is proportionate?\n\nRouting decision\nTwo-stage sequence:\n\n1. **Suicide Enquiry** \u2014 first. The manager's question invokes risk, and the transcript is raw and unreviewed, so before anything else is done the material needs to be checked for what has and hasn't been directly established about suicidality, organised by CASE chronology. Since the scenario states suicide was never explicitly discussed on this call, the correct output of this stage is that suicidality is **not established** and direct enquiry did not occur \u2014 full stop. This is not the same as a finding of \"low risk\" or \"no risk,\" and Suicide Enquiry must not scan the transcript for indirect content (hopelessness, tone, disengagement, goodbye-type language, functional decline) and convert that into a suicidality finding by inference. That inference is precisely what Suicide Enquiry exists to refuse to make.\n\n2. **PORF Formulation** \u2014 second, and it should run regardless of what stage 1 finds. PORF is broader than suicidality: if the transcript contains other formulation-relevant material \u2014 deterioration, agitation, loss, altered functioning, reduced resources, a shift in how the caller is presenting \u2014 PORF can and should work with that material directly from the source. PORF's task is to determine what the presentation means for this person and what response is proportionate, explicitly carrying forward \"suicidality not established / direct enquiry did not occur\" as a named, unresolved gap in the formulation \u2014 not as a negative finding, and not as a reason to decline to run PORF at all.\n\nNeither stage produces a categorical \"high risk\" label. The manager's question needs to be reframed into what these skills actually produce (see note below), not promised a direct yes/no answer.\n\nWhat each stage needs from the previous one\nStage 2 (PORF) needs one specific input from stage 1 (Suicide Enquiry): the explicit statement that suicidality is not established and direct enquiry did not occur, so PORF carries that forward as a named gap rather than silently treating absence-of-enquiry as evidence of absence-of-risk. PORF does not need to wait on stage 1 to identify other formulation-relevant material already present in the transcript \u2014 that material is available to PORF directly from the source.\n\nNot routed to\n- **Contact Pattern Analysis** \u2014 nothing in the material describes a change in contact frequency, clustering, disconnection, or engagement over time. This is a single call under review, not a pattern-over-time question.\n- **CRG Triage** \u2014 no unresolved decision about escalation or level of care has been identified, and none should be assumed just because the manager used the word \"risk.\" Whether a CRG referral is warranted can only be assessed after Suicide Enquiry and PORF have actually run, by applying CRG's own forcing question (\"what decision cannot be made at the current level of care\") to whatever remains genuinely unresolved once those stages are done.\n- **CMP/Access Review** \u2014 nothing in the material references an existing or proposed access arrangement or CMP. There is no access question to review here.\n\nNote on the manager's framing: once stages 1\u20132 are complete, \"is this caller high risk?\" should be answered in PORF's terms \u2014 what the presentation means and what response is proportionate \u2014 including the explicit caveat that suicidality itself was not directly established in this call, rather than converted into a bare high/low risk label, unless the specific PORF version in use is built to produce categorical risk levels.\n"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

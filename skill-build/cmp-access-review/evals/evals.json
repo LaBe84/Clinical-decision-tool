@@ -1,0 +1,47 @@
+{
+  "skill_name": "cmp-access-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "high-volume-cmp-working",
+      "prompt": "Caller has an existing CMP (introduced 3 months ago, limiting contact to two named counsellors and structured 15-minute check-ins) due to previously very high, distressed, unstructured contact. Contact volume remains high - still 5-6 contacts a week - but calls are now consistently brief, calm, focused on a specific agreed coping plan, and end with clear closure. No signs of unaddressed risk in recent contacts. Should the CMP be tightened further given the volume is still high?",
+      "expected_output": "Should conclude the intervention is working - contact remains operationally significant but has become safer, shorter and more purposeful. High volume alone should not justify further restriction. Decision: continue current access/CMP as is, not tighten.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "reduced-volume-cmp-not-working",
+      "prompt": "Caller had a restrictive CMP introduced 2 months ago after high contact volume was flagged as a service concern (limited to one contact per day, specific time window only). Contact volume has dropped from daily to roughly weekly since. However, the caller has told a counsellor they 'don't bother calling anymore because it's too complicated' and the last two contacts, when they did happen, involved the caller minimising distress and ending quickly without the counsellor being able to explore how they were coping. Is the CMP a success given the volume reduction?",
+      "expected_output": "Should explicitly reject 'volume dropped = success' - should flag that the caller disengaging before discussing risk and reporting the service feels unusable indicates the CMP may be achieving the opposite of its clinical purpose. Decision should point toward modifying/reviewing the CMP, not continuing it as a success.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "single-boundary-breach",
+      "prompt": "A caller under an informal agreement to only contact during evening hours called once at 2pm, clearly distressed about an acute daytime event. This is the only time they've contacted outside the agreed window in 6 months. Does this breach require the access arrangement to be tightened?",
+      "expected_output": "Should treat this as information, not an automatic trigger - a single breach in an acute, understandable context after 6 months of adherence doesn't establish the arrangement isn't working. Decision: continue current access, no restriction needed from this event alone.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "staff-discomfort-driving-restriction-request",
+      "prompt": "Several counsellors have told a manager that a particular caller is 'exhausting' to talk to and they'd like a CMP put in place to limit contact. The caller's contact pattern analysis shows frequent but appropriate, on-topic, risk-relevant contact with no evidence the current approach isn't working clinically - the difficulty described is about emotional demand on staff, not about the contact pattern being clinically unproductive. What should happen with access?",
+      "expected_output": "Should separate staff difficulty/burnout (a supervision and support matter) from whether access needs to change. Should not recommend restriction based on staff finding the caller exhausting when the clinical review doesn't independently support it. Decision: continue current access, with a separate recommendation about staff support that isn't presented as a CMP.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "unrestricted-access-not-working-due-to-discomfort",
+      "prompt": "A caller has no CMP and unrestricted access. Over several months, contact has become extremely frequent, chaotic, and unstructured - multiple counsellors report they're unable to complete any meaningful conversation because the caller talks over them, contacts change topic rapidly, and no session ever reaches closure or a coping plan. No one has proposed a CMP because staff feel uncomfortable suggesting a boundary might be needed. Is the current unrestricted approach the right one?",
+      "expected_output": "Should recognise that avoiding a boundary because restriction feels uncomfortable is not the least-restrictive option if the current unstructured approach genuinely isn't working - the current approach fails the 'is this working' test on its own terms (no session reaching closure, no coping plan achieved). Should recommend introducing a structured approach with a specific rationale, not continuing to do nothing because it avoids discomfort.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "cmp-cannot-block-immediate-risk",
+      "prompt": "A caller under a CMP that restricts them to contacting only between 9am-5pm on weekdays has called outside those hours reporting they have taken steps toward suicide right now and need help. A new counsellor is unsure whether to proceed given the CMP terms. What should happen?",
+      "expected_output": "Should state unambiguously that the CMP cannot and does not block or delay response to an immediate safety concern - the safety pathway remains fully respondable regardless of CMP terms. This should be treated as an urgent safety response, not an access-review question, and the skill should be explicit that no CMP overrides this.",
+      "files": []
+    }
+  ]
+}
