@@ -15,4 +15,4 @@ Applicable organisational policy and mandatory procedure take precedence over ca
 ## Boundaries
 Suicide Enquiry establishes information; PORF interprets its clinical significance; intervention skills apply established material; escalation resolves a defined decision at the appropriate level. Completion of documentation is not evidence that the underlying reasoning is adequate.
 
-See `governance/provenance-register.md` for classification and approval requirements.
+See [`governance/provenance-register.md`](/governance/provenance-register.md) for classification and approval requirements.
