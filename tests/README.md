@@ -19,3 +19,13 @@ Candidate initial regression invariants include:
 10. A skill must not claim organisational policy where the repository has not established the relevant policy source.
 
 The concrete draft contracts are in [canonical-reasoning-regression-spec.md](canonical-reasoning-regression-spec.md). They remain reasoning-invariant tests, not policy-conformance tests; exact organisational procedure and thresholds require controlled sources.
+
+## Run the architecture checks
+
+From the repository root:
+
+```bash
+python3 -m unittest tests/test_canonical_contracts.py
+```
+
+These checks validate canonical dependency declarations, draft status, the test-contract register, and the organisational-source boundary. They do not assess a model's output against clinical scenarios; that requires an accessible eval runner and approved test cases.
