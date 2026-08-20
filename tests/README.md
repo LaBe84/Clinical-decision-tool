@@ -18,4 +18,4 @@ Candidate initial regression invariants include:
 9. CRG escalation must not be triggered solely by complexity or contact volume.
 10. A skill must not claim organisational policy where the repository has not established the relevant policy source.
 
-These are candidate tests pending validation against canonical sources and organisational policy.
+The concrete draft contracts are in [canonical-reasoning-regression-spec.md](canonical-reasoning-regression-spec.md). They remain reasoning-invariant tests, not policy-conformance tests; exact organisational procedure and thresholds require controlled sources.
