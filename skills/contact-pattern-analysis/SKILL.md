@@ -20,6 +20,17 @@ description: >
 
 # Contact Pattern Analysis
 
+## Canonical dependencies
+
+Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
+
+- [authority-and-uncertainty](../canonical/00-system-principles/authority-and-uncertainty.md)
+- [behaviour-change-and-causality](../canonical/00-system-principles/behaviour-change-and-causality.md)
+- [pattern-and-function](../canonical/04-contact-pattern/pattern-and-function.md)
+- [decision-and-oversight](../canonical/06-escalation/decision-and-oversight.md)
+
+
+
 ## Purpose
 
 Detect and describe meaningful change in how a person is using a crisis
@@ -35,38 +46,17 @@ output can be one input into a PORF — but counting calls is not the same task
 as assessing risk, and this skill must not collapse into doing PORF's job by
 another route.
 
-## Four invariants specific to this skill
+## Applying shared pattern discipline
 
-1. **Observed behaviour ≠ inferred function.** What happened is data. Why is
-   an inference, and stays labelled as one unless the person has directly and
-   consistently stated their own reason (see Step 4).
-2. **Stable pattern ≠ effective intervention.** A pattern staying the same,
-   including a calm, non-escalating one, tells you the pattern is stable. It
-   does not tell you the current response is achieving anything, or that it
-   isn't quietly maintaining the thing it's responding to.
-3. **Reduced contact ≠ improvement.**
-4. **Increased contact ≠ deterioration.**
+Apply the canonical evidence, behaviour/change, pattern/function, and escalation drafts above. This skill’s task is to describe contact-pattern evidence and identify the decision question it raises; it does not convert volume into risk, function, or a service destination.
+## Shared rules
 
-## Foundational rules (carried from Skill 01, apply here too)
-
-1. **Unknown is not negative evidence.** A gap in the record is a gap, not a
-   finding.
-2. **Behaviour is not function.** What happened (frequency, timing, duration,
-   disconnection point) is observable. Why it happened is not, unless directly
-   evidenced — it remains a hypothesis.
-3. **Oversight escalation is not risk escalation.** Persisting, unexplained
-   pattern change can justify coordinated review even when nothing establishes
-   elevated suicide risk.
-
+Apply the canonical dependencies above; do not restate or reinterpret them in this skill.
 ## Hard constraints
 
 These must hold in every analysis, stated because they are the errors this
 skill exists to prevent:
 
-- Frequency ≠ risk.
-- Frequency ≠ function.
-- Disengagement ≠ absence of need.
-- Non-contact ≠ improvement.
 - A statistical change is not automatically a clinically meaningful change —
   magnitude and persistence matter, and an isolated variation is not the same
   finding as a sustained or accelerating one.
