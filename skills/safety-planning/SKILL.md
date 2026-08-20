@@ -21,10 +21,10 @@ description: >
 
 Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
 
-- [authority-and-uncertainty](../canonical/00-system-principles/authority-and-uncertainty.md)
-- [behaviour-change-and-causality](../canonical/00-system-principles/behaviour-change-and-causality.md)
-- [override-principle](../canonical/01-immediate-safety/override-principle.md)
-- [intervention-usability-and-access](../canonical/05-intervention/intervention-usability-and-access.md)
+- [authority-and-uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- [behaviour-change-and-causality](/canonical/00-system-principles/behaviour-change-and-causality.md)
+- [override-principle](/canonical/01-immediate-safety/override-principle.md)
+- [intervention-usability-and-access](/canonical/05-intervention/intervention-usability-and-access.md)
 
 
 
