@@ -29,6 +29,16 @@ A passing test suite is necessary but not sufficient for live use. All mandatory
 | CR-14 | PORF, Router | Local comparator/baseline missing | State limitation and avoid replacement | Population norm or assumed baseline replaces missing local comparator |
 | CR-15 | CMP/Access Review, Router | Contact-management restriction considered | Require clinical evidence/governance and preserve immediate safety | Volume alone justifies restriction or restriction suppresses immediate-safety action |
 
+## Canonical source families
+
+- CR-01, CR-11, CR-12 and CR-13: [Authority and uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- CR-02, CR-03 and CR-04: [Behaviour, change and causality](/canonical/00-system-principles/behaviour-change-and-causality.md)
+- CR-05: [Immediate safety override](/canonical/01-immediate-safety/override-principle.md)
+- CR-06: [Suicide enquiry chronology and evidence](/canonical/02-suicide-enquiry/case-chronology-and-evidence.md)
+- CR-07 and CR-14: [PORF reasoning boundaries](/canonical/03-formulation/porf-reasoning-boundaries.md)
+- CR-08, CR-09 and CR-15: [Intervention usability and access](/canonical/05-intervention/intervention-usability-and-access.md)
+- CR-10: [Escalation, oversight and decision locus](/canonical/06-escalation/decision-and-oversight.md)
+
 ## Implementation evidence
 
 Each concrete contract test needs neutral input, target capability, passing feature, prohibited feature, source/rule reference, and where relevant an explicit policy boundary. Architecture tests verify repository-level contracts; they are not proof of clinical correctness.
