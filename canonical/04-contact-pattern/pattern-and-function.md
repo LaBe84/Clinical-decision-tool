@@ -6,6 +6,8 @@ Contact Pattern Analysis describes change in contact behaviour and considers pla
 
 Where data permit, distinguish attempted contact, connected contact, substantive engagement, and completed intervention. If a category is unavailable, state the limitation; visible completed/connected contacts do not stand for the whole pattern.
 
+**Contact data describes behaviour that was recorded. Clinical formulation interprets its possible function. Neither substitutes for the other.**
+
 Function is not established unless directly and consistently evidenced. A continuing pattern can raise a formulation question about whether the response is achieving its purpose, but contact-pattern data alone cannot establish causal maintenance.
 
 An unexplained pattern or unresolved continuity issue can require oversight without establishing elevated suicide risk. Organisational destinations and exact escalation criteria remain provisional pending approved service sources.
