@@ -1,6 +1,6 @@
 # Canonical approval gate
 
-**Review status:** NO CANONICAL DRAFT IS APPROVED.
+**Review status:** MODEL BASIS CONFIRMED FOR CASE, PORF AND SAFETY PLANNING ON 2026-08-21; LIVE USE PENDING. Canonical documents remain DRAFT until the operational go-live decision.
 
 This review assesses whether the current drafts are eligible to become authoritative. It is a governance readiness review, not clinical-model adoption or organisational approval.
 
@@ -21,18 +21,22 @@ This review assesses whether the current drafts are eligible to become authorita
 
 - **Ultimate sign-off:** Harry Miller.
 - **Clinical/governance counsel:** Claire O'Prey and the requesting author.
-- **Current decision status:** sign-off authority identified; no adoption or approval decision has yet been recorded.
+- **Current decision status:** Harry Miller confirmed CASE, PORF and Safety Planning model basis effective 2026-08-21. Live use remains pending.
 
 Harry’s decision should explicitly identify the adopted version of CASE, PORF and Safety Planning, any accepted local adaptation, scope, effective date, next review date, and any conditions or exceptions. Counsel informs the decision but does not itself change a draft’s status.
 
 ## Required decisions before any promotion
 
-1. **Model adoption:** accountable clinical owner confirms the adopted CASE, PORF and Safety Planning source/version, and records approved local adaptations.
+1. **Model adoption:** complete — Harry Miller confirmed the model basis effective 2026-08-21. Any later local adaptation must be recorded and reviewed before live use.
 2. **Policy control:** organisational owner supplies current controlled documents in the [organisational source-acquisition register](organisational-source-acquisition-register.md).
 3. **Data control:** information-governance owner confirms which contact categories can be reliably observed and documented.
 4. **Clinical review:** reviewers confirm that each draft preserves the adopted model and does not add unsupported clinical claims.
 5. **Regression evidence:** run [the canonical contract suite](/tests/test_canonical_contracts.py) and the approved case-evaluation suite; record results.
 6. **Approval record:** name approving role, date, scope, source version, exceptions and next review date in the provenance register.
+
+## Operational release boundary
+
+This decision confirms the model basis only. It does **not** authorise live use, promote all canonical drafts to approved operational rules, or replace the outstanding organisational policy, data-definition, case-eval, and final release-validation steps.
 
 ## Prohibited shortcut
 
