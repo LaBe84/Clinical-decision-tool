@@ -17,6 +17,14 @@ This review assesses whether the current drafts are eligible to become authorita
 | Safety planning/access | External model candidate + local design + policy candidates | Safety Planning source identified; local model/adaptation and CMP policy unavailable | Remain DRAFT |
 | Escalation/oversight | Local service design/policy candidates | CRG remit, destinations and decision tool unavailable | Remain DRAFT |
 
+## Accountable approval arrangement
+
+- **Ultimate sign-off:** Harry Miller.
+- **Clinical/governance counsel:** Claire O'Prey and the requesting author.
+- **Current decision status:** sign-off authority identified; no adoption or approval decision has yet been recorded.
+
+Harry’s decision should explicitly identify the adopted version of CASE, PORF and Safety Planning, any accepted local adaptation, scope, effective date, next review date, and any conditions or exceptions. Counsel informs the decision but does not itself change a draft’s status.
+
 ## Required decisions before any promotion
 
 1. **Model adoption:** accountable clinical owner confirms the adopted CASE, PORF and Safety Planning source/version, and records approved local adaptations.
