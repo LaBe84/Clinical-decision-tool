@@ -36,7 +36,7 @@ class CanonicalContractTests(unittest.TestCase):
 
     def test_contract_specification_contains_all_fifteen_contracts(self):
         content = self.read("tests/canonical-reasoning-regression-spec.md")
-        self.assertEqual({f"CR-{number:02d}" for number in range(1, 16)}, set(re.findall(r"\bCR-\d\d\b", content)))
+        self.assertEqual({f"CR-{number:02d}" for number in range(1, 17)}, set(re.findall(r"\bCR-\d\d\b", content)))
         self.assertIn("necessary but not sufficient for live use", content)
         self.assertIn("Policy-conformance tests", content)
 
@@ -52,6 +52,8 @@ class CanonicalContractTests(unittest.TestCase):
         self.assertIn("specific section, heading or other stable locator", content)
         self.assertIn("conflict with another controlled source", content)
         self.assertIn("fully support, partially support or do not support", content)
+        self.assertIn("Lifeline contact-data definitions / proposed data dictionary", content)
+        self.assertIn("not what contact meant", content)
 
 if __name__ == "__main__":
     unittest.main()
