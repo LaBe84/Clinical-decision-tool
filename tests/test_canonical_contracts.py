@@ -34,7 +34,7 @@ class CanonicalContractTests(unittest.TestCase):
         for relative_path in CANONICAL_DRAFTS:
             self.assertIn("**Status:** DRAFT", self.read(f"canonical/{relative_path}"), relative_path)
 
-    def test_contract_specification_contains_all_fifteen_contracts(self):
+    def test_contract_specification_contains_all_sixteen_contracts(self):
         content = self.read("tests/canonical-reasoning-regression-spec.md")
         self.assertEqual({f"CR-{number:02d}" for number in range(1, 17)}, set(re.findall(r"\bCR-\d\d\b", content)))
         self.assertIn("necessary but not sufficient for live use", content)
