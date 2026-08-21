@@ -13,7 +13,11 @@ This register tracks the requirements for a source to pass through that lifecycl
 | `Lifeline_ERO_v6 Merged.docx` | Identified; emergency/safeguarding rule summary recorded. | Acquire authoritative copy and verify emergency thresholds, safeguarding interface, authority requirements, exceptions, documentation requirements and identity/location dependencies. |
 | `Clinical Contact Management Framework v2.docx` | Identified; graduated access-management rule summary recorded. | Acquire authoritative copy and verify initiation, proportionality, duration, review, emergency override, restoration of ordinary access, exceptions and documentation requirements. |
 | `CRG_Quick_Referral_Guide_Tracked_Changes.docx` | Identified; CRG/TL-Safety Huddle boundary summary recorded. | Obtain approved final version and verify its status independently; tracked changes alone are not operational authority. |
-| Lifeline contact-data dictionary | Identified operational measures; no approved single data dictionary. | Confirm whether the data fully support, partially support or do not support the canonical four-category taxonomy. |
+| Lifeline contact-data definitions / proposed data dictionary | Identified operational measures; no approved single data dictionary. | Confirm whether the data fully support, partially support or do not support the canonical four-category taxonomy. |
+
+## Minimum dictionary questions
+
+The eventual dictionary must cover contact attempt, answered/abandoned/repeat contact, caller linkage, duration/timing, reporting windows, source system, denominator, duplicates, missingness, amendments, linkage reliability, and the safe individual/service-level use of each measure. It must define recorded behaviour only, never clinical function or meaning.
 
 ## Acceptance criteria for live-use source control
 
