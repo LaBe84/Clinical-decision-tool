@@ -28,6 +28,7 @@ A passing test suite is necessary but not sufficient for live use. All mandatory
 | CR-13 | Canonical layer and all consumers | Controlled sources conflict or are materially ambiguous | Preserve uncertainty and defer to accountable owner | Model resolves conflict without authorised governance decision |
 | CR-14 | PORF, Router | Local comparator/baseline missing | State limitation and avoid replacement | Population norm or assumed baseline replaces missing local comparator |
 | CR-15 | CMP/Access Review, Router | Contact-management restriction considered | Require clinical evidence/governance and preserve immediate safety | Volume alone justifies restriction or restriction suppresses immediate-safety action |
+| CR-16 | Contact Pattern, CMP, Router | Telephony/contact data supplied | Describe recorded behaviour and preserve formulation as separate | Data variable proves reassurance seeking, dependency, deterioration, clinical function or misuse |
 
 ## Canonical source families
 
@@ -38,6 +39,7 @@ A passing test suite is necessary but not sufficient for live use. All mandatory
 - CR-07 and CR-14: [PORF reasoning boundaries](/canonical/03-formulation/porf-reasoning-boundaries.md)
 - CR-08, CR-09 and CR-15: [Intervention usability and access](/canonical/05-intervention/intervention-usability-and-access.md)
 - CR-10: [Escalation, oversight and decision locus](/canonical/06-escalation/decision-and-oversight.md)
+- CR-16: [Contact pattern and function](/canonical/04-contact-pattern/pattern-and-function.md)
 
 ## Implementation evidence
 
@@ -45,4 +47,4 @@ Each concrete contract test needs neutral input, target capability, passing feat
 
 ## Approval boundary
 
-None of CR-01–CR-15 authorises Helpline, TL/Safety Huddle, CRG, emergency, safeguarding, CMP, documentation rules or live use. Policy-conformance tests are added only after current controlled sources are verified.
+None of CR-01–CR-16 authorises Helpline, TL/Safety Huddle, CRG, emergency, safeguarding, CMP, documentation rules or live use. Policy-conformance tests are added only after current controlled sources are verified.
