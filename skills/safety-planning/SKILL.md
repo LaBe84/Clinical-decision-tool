@@ -17,6 +17,17 @@ description: >
 
 # Safety Planning
 
+## Canonical dependencies
+
+Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
+
+- [authority-and-uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- [behaviour-change-and-causality](/canonical/00-system-principles/behaviour-change-and-causality.md)
+- [override-principle](/canonical/01-immediate-safety/override-principle.md)
+- [intervention-usability-and-access](/canonical/05-intervention/intervention-usability-and-access.md)
+
+
+
 ## Purpose
 
 **Given what is already known about this person's current crisis pattern,
@@ -39,14 +50,9 @@ the material indicates immediate danger, the immediate-risk pathway takes
 precedence over completing the planning workflow — see the immediate-danger
 guidance below.
 
-## Foundational rules (carried from Skills 01–06)
+## Shared rules
 
-1. Unknown is not negative evidence.
-2. Behaviour is not function.
-3. This skill does not formulate risk or determine escalation — that's PORF
-   and CRG Triage's job. It builds the plan for a formulation that already
-   exists.
-
+Apply the canonical dependencies above; do not restate or reinterpret them in this skill.
 ## The invariants specific to safety planning
 
 - **Safety planning is an intervention, not an assessment.** Don't let this

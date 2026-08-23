@@ -18,6 +18,17 @@ description: >
 
 # CMP / Access Review
 
+## Canonical dependencies
+
+Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
+
+- [authority-and-uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- [behaviour-change-and-causality](/canonical/00-system-principles/behaviour-change-and-causality.md)
+- [override-principle](/canonical/01-immediate-safety/override-principle.md)
+- [intervention-usability-and-access](/canonical/05-intervention/intervention-usability-and-access.md)
+
+
+
 ## Purpose
 
 The question this skill answers is not "does this person need a CMP?" It is:
@@ -43,15 +54,9 @@ formulation still determines what the intervention should be. "The queue is
 struggling" tells you there's a problem to solve — it doesn't tell you one
 contact per day is the clinically correct answer to it.
 
-## Foundational rules (carried from Skills 01–03)
+## Shared rules
 
-1. Unknown is not negative evidence.
-2. Behaviour is not function.
-3. Oversight escalation is not risk escalation.
-4. Stable pattern is not the same as effective intervention.
-5. Don't manufacture a decision — including a restriction — that the material
-   doesn't actually support.
-
+Apply the canonical dependencies above; do not restate or reinterpret them in this skill.
 ## The invariants specific to access review
 
 - **High contact ≠ dysfunctional contact.** Frequent use of the service can be

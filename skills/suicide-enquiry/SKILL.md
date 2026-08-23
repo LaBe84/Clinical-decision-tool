@@ -19,6 +19,16 @@ description: >
 
 # Suicide Enquiry
 
+## Canonical dependencies
+
+Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
+
+- [authority-and-uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- [override-principle](/canonical/01-immediate-safety/override-principle.md)
+- [case-chronology-and-evidence](/canonical/02-suicide-enquiry/case-chronology-and-evidence.md)
+
+
+
 ## Purpose
 
 Establish what is currently known about a person's suicidality, organised so
@@ -31,32 +41,9 @@ this skill produces should be usable as an input to a PORF — dates, direct
 quotes, specific facts organised by chronology — not a set of conclusions
 that quietly does PORF's job under a different heading.
 
-## Foundational rules (carried from Skills 01–04)
+## Shared rules
 
-1. Unknown is not negative evidence — a gap in the chronology is a gap to
-   name, not something to fill with a plausible guess or an "unassessable."
-
-   This has to be almost obnoxiously clean in this skill specifically,
-   because the wording used to record an unasked domain can accidentally
-   read as a clinical finding even when that's not the intent. Use exactly
-   three categories, and don't blur them:
-   - **"Denied"** — the person was directly asked and said no.
-   - **"Not disclosed"** — there was a clear opportunity for disclosure (the
-     topic came up, the person was engaged on it) but nothing was disclosed,
-     and that distinction actually matters to record.
-   - **"Not established"** — anything else, including any domain that
-     simply wasn't asked about.
-   Never write "no plan reported," "no intent reported," "no indication of
-   [X]," or similar constructions for a domain that wasn't actually asked
-   about — that phrasing reads as a negative clinical finding even when all
-   it means is "not in the material provided." If plan, intent, means, or
-   preparatory behaviour weren't directly asked about, say "not established,"
-   not "none reported."
-2. Behaviour is not function — what someone said or did is enquiry material;
-   why is formulation's job, not this skill's.
-3. This skill does not route or score. No destination, no risk level, no
-   proportionate-response recommendation belongs in its output.
-
+Apply the canonical dependencies above; do not restate or reinterpret them in this skill.
 ## The two failure modes this skill exists to prevent
 
 Both look like thoroughness. Neither is enquiry.
@@ -117,10 +104,6 @@ report."
 
 ## Enquiry discipline
 
-- **Direct enquiry is not optional and is not replaceable by inference from
-  mood, tone, or history.** If the material shows suicide wasn't directly
-  asked about, say so — don't infer an answer from how the person otherwise
-  sounded.
 - **A "no" is data, not closure.** Record what was asked and what was
   answered; do not editorialise the answer as reassuring or as closing the
   matter. That interpretive step belongs to PORF.
@@ -134,15 +117,6 @@ report."
   points in a contact (or across a chronology of contacts) give different
   answers, record both, with when each was said — don't quietly resolve the
   discrepancy into a single tidy account.
-- **Don't categorise ambiguous death-related language as passive or active
-  ideation until its meaning has actually been clarified.** "It would be
-  easier if I wasn't here" or similar statements are common and genuinely
-  ambiguous — record the exact words and note that the meaning wasn't
-  clarified, rather than labelling it "reads as passive ideation" and then
-  disclaiming that label in the next sentence. That's interpretation sneaking
-  in through a hedge; the hedge doesn't neutralise it. If a statement's
-  relation to suicidality wasn't established, say exactly that — don't
-  reach for the clinical term even provisionally.
 
 ## Output format
 

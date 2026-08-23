@@ -18,6 +18,17 @@ description: >
 
 # CRG Triage
 
+## Canonical dependencies
+
+Apply the following **draft** canonical rules. They define shared reasoning discipline; organisational policy and mandatory procedure take precedence. Preserve this skill’s bounded application logic and route gaps rather than recreating upstream reasoning.
+
+- [authority-and-uncertainty](/canonical/00-system-principles/authority-and-uncertainty.md)
+- [behaviour-change-and-causality](/canonical/00-system-principles/behaviour-change-and-causality.md)
+- [override-principle](/canonical/01-immediate-safety/override-principle.md)
+- [decision-and-oversight](/canonical/06-escalation/decision-and-oversight.md)
+
+
+
 ## Purpose
 
 Decide where a case needs to go, using the reasoning already produced by a
@@ -34,19 +45,9 @@ feels. Complexity is a property of the case. Escalation is a property of the
 decision. This skill exists to keep those two things from being treated as
 the same.
 
-## Foundational rules (carried from Skills 01 and 02)
+## Shared rules
 
-1. **Unknown is not negative evidence.**
-2. **Behaviour is not function.**
-3. **Oversight escalation is not risk escalation** — and neither is
-   synonymous with a formulation being *interesting*. A case can be genuinely
-   hard to think about and still be entirely within scope for Helpline
-   management if nothing about it requires a decision Helpline can't make.
-4. **Stable pattern is not the same as effective intervention** — but an open
-   question about effectiveness is not, by itself, a reason to escalate today
-   (see Contact Pattern Analysis's routing logic — the same discipline
-   applies here).
-
+Apply the canonical dependencies above; do not restate or reinterpret them in this skill.
 ## What this skill is not
 
 This is a triage/routing skill, not a formulation skill. It should not:
